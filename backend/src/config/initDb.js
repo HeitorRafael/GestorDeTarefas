@@ -1,6 +1,5 @@
-// backend/src/config/initDb.js
-const pool = require('./db'); // Importa a conexão com o banco de dados
-const bcrypt = require('bcryptjs'); // Para hashear a senha do usuário admin
+const pool = require('./db');
+const bcrypt = require('bcryptjs');
 
 async function initializeDatabase() {
   try {
@@ -15,15 +14,21 @@ async function initializeDatabase() {
     `);
     console.log('Tabela Users verificada/criada.');
 
-    // Inserir um usuário admin padrão se não existir
+    // Inserir ou atualizar um usuário admin padrão
+    const hashedPassword = 'admin123'; // Senha padrão: admin123 (TEMPORARY - DO NOT USE IN PRODUCTION)
     const { rows } = await pool.query("SELECT * FROM Users WHERE username = 'admin'");
     if (rows.length === 0) {
-      const hashedPassword = await bcrypt.hash('admin123', 10); // Senha padrão: admin123
       await pool.query(
         "INSERT INTO Users (username, password, role) VALUES ($1, $2, 'admin')",
         ['admin', hashedPassword]
       );
       console.log('Usuário admin padrão inserido.');
+    } else {
+      await pool.query(
+        "UPDATE Users SET password = $1 WHERE username = 'admin'",
+        [hashedPassword]
+      );
+      console.log('Senha do usuário admin padrão atualizada.');
     }
 
     // 2. Criar Tabela Tasks
