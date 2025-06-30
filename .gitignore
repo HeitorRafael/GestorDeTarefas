@@ -1,0 +1,14 @@
+# Dependencies
+/backend/node_modules
+/frontend/node_modules
+
+# Environment variables
+/backend/.env
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# IDE config
+.idea/
+.vscode/
