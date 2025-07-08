@@ -1,7 +1,8 @@
-const pool = require('./db');
+const getPool = require('./db');
 const bcrypt = require('bcryptjs');
 
 async function initializeDatabase() {
+  const pool = getPool();
   try {
     // 1. Criar Tabela Users
     await pool.query(`

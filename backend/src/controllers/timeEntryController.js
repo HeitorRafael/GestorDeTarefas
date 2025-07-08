@@ -6,6 +6,9 @@ exports.startTimeEntry = async (req, res) => {
   const { taskId, clientId } = req.body;
   const userId = req.user.id; // Obtido do token JWT no middleware de autenticação
 
+  // <<< LOG DE DEBUG
+  console.log(`Tentando iniciar tarefa. UserId: ${userId}, TaskId: ${taskId}, ClientId: ${clientId}`);
+
   try {
     const taskExists = await pool.query('SELECT 1 FROM Tasks WHERE id = $1', [taskId]);
     if (taskExists.rows.length === 0) {
@@ -26,7 +29,7 @@ exports.startTimeEntry = async (req, res) => {
     }
 
     const newEntry = await pool.query(
-      'INSERT INTO TimeEntries (userId, taskId, clientId, startTime) VALUES ($1, $2, $3, NOW()) RETURNING *',
+      'INSERT INTO timeentries (userId, taskId, clientId, startTime) VALUES ($1, $2, $3, NOW()) RETURNING *',
       [userId, taskId, clientId]
     );
     res.status(201).json({ msg: 'Registro de tempo iniciado com sucesso!', entry: newEntry.rows[0] });

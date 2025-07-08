@@ -1,8 +1,9 @@
 // backend/src/app.js
+require('dotenv').config();
+console.log('DB_DATABASE (app.js, after dotenv): ', process.env.DB_DATABASE);
 const express = require('express');
 const cors = require('cors');
 const initializeDatabase = require('./config/initDb');
-require('dotenv').config();
 
 // Importar todas as rotas
 const authRoutes = require('./routes/authRoutes');
