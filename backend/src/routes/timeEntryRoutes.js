@@ -19,4 +19,9 @@ router.put('/end/:id', authMiddleware, timeEntryController.endTimeEntry);
 // @access  Private (Usuário Comum/Admin)
 router.get('/user/:userId', authMiddleware, timeEntryController.getUserTimeEntries);
 
+// @route   DELETE /api/time-entries/active
+// @desc    Cancelar (deletar) a entrada de tempo ativa do usuário
+// @access  Private (Usuário Comum)
+router.delete('/active', authMiddleware, timeEntryController.cancelActiveEntry);
+
 module.exports = router;

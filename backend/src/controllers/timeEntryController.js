@@ -116,3 +116,30 @@ exports.getUserTimeEntries = async (req, res) => {
     res.status(500).send('Erro no servidor ao obter entradas de tempo do usuário.');
   }
 };
+
+// Cancelar/deletar uma entrada de tempo ativa (em andamento)
+exports.cancelActiveEntry = async (req, res) => {
+  const userId = req.user.id;
+
+  try {
+    // Encontra a entrada ativa (sem endTime)
+    const activeEntry = await pool.query(
+      'SELECT id FROM TimeEntries WHERE userId = $1 AND endTime IS NULL',
+      [userId]
+    );
+
+    if (activeEntry.rows.length === 0) {
+      return res.status(404).json({ msg: 'Nenhuma tarefa em andamento para cancelar.' });
+    }
+
+    const entryId = activeEntry.rows[0].id;
+
+    // Deleta a entrada
+    await pool.query('DELETE FROM TimeEntries WHERE id = $1', [entryId]);
+
+    res.json({ msg: 'A tarefa em andamento foi cancelada com sucesso.' });
+  } catch (err) {
+    console.error('Erro ao cancelar a tarefa:', err.message);
+    res.status(500).send('Erro no servidor ao cancelar a tarefa.');
+  }
+};
