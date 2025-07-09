@@ -21,7 +21,6 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
   const { token, user } = useAuth();
   const [time, setTime] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [isPaused, setIsPaused] = useState(false); // <<< Novo estado para "pausado"
   const [activeEntry, setActiveEntry] = useState(null); // <<< Armazena a tarefa ativa (ID, cliente, tarefa)
   const [isLoading, setIsLoading] = useState(true); // <<< Para o carregamento inicial
   const [error, setError] = useState(null);
@@ -58,7 +57,7 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
   }, [fetchActiveEntry]);
 
   useEffect(() => {
-    if (isRunning && !isPaused) {
+    if (isRunning) {
       timerRef.current = setInterval(() => {
         setTime((prevTime) => prevTime + 1);
       }, 1000);
@@ -66,7 +65,7 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       clearInterval(timerRef.current);
     }
     return () => clearInterval(timerRef.current);
-  }, [isRunning, isPaused]);
+  }, [isRunning]);
 
   const formatTime = (seconds) => {
     const hours = String(Math.floor(seconds / 3600)).padStart(2, '0');
@@ -82,7 +81,6 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
     }
     setError(null);
     setIsRunning(true);
-    setIsPaused(false);
 
     try {
       const config = { headers: { 'x-auth-token': token } };
@@ -99,8 +97,7 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
     }
   };
 
-  const handlePause = async () => {
-    setIsPaused(true);
+  const handleEnd = async () => {
     setIsRunning(false); // Para o contador
     try {
       const config = { headers: { 'x-auth-token': token } };
@@ -109,36 +106,10 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       if (onTimeEntrySaved) {
         onTimeEntrySaved();
       }
+      setActiveEntry(null);
+      setTime(0);
     } catch (err) {
-      setError(`Falha ao pausar: ${err.response?.data?.msg || err.message}`);
-      // Reverte o estado se a API falhar
-      setIsPaused(false);
-      setIsRunning(true);
-    }
-  };
-
-  const handleContinue = async () => {
-    // Continua com o mesmo cliente/tarefa da entrada pausada
-    if (!activeEntry) {
-        setError("Não há tarefa para continuar.");
-        return;
-    }
-    setError(null);
-    setIsRunning(true);
-    setIsPaused(false);
-
-    try {
-        const config = { headers: { 'x-auth-token': token } };
-        const res = await axios.post(
-            `${API_BASE_URL}/time-entries/start`,
-            { clientId: activeEntry.clientId, taskId: activeEntry.taskId },
-            config
-        );
-        setActiveEntry(res.data.entry); // Define a nova entrada como ativa
-        setTime(0); // Reinicia o cronômetro para o novo segmento
-    } catch (err) {
-        setError(`Falha ao continuar: ${err.response?.data?.msg || err.message}`);
-        setIsRunning(false);
+      setError(`Falha ao finalizar: ${err.response?.data?.msg || err.message}`);
     }
   };
 
@@ -152,7 +123,6 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
         await axios.delete(`${API_BASE_URL}/time-entries/active`, config);
         
         setIsRunning(false);
-        setIsPaused(false);
         setActiveEntry(null);
         setTime(0);
         setError(null);
@@ -183,34 +153,17 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       );
     }
 
-    if (isRunning && !isPaused) { // Tarefa rodando
+    if (isRunning) { // Tarefa rodando
       return (
         <>
-          <Button variant="contained" color="warning" startIcon={<PauseIcon />} onClick={handlePause}>
-            Pausar
+          <Button variant="contained" color="warning" startIcon={<StopIcon />} onClick={handleEnd}>
+            Finalizar
           </Button>
           <Button variant="outlined" color="error" startIcon={<CancelIcon />} onClick={handleCancel}>
             Cancelar Tarefa
           </Button>
         </>
       );
-    }
-
-    if (isPaused) { // Tarefa pausada
-        return (
-            <>
-                <Button variant="contained" color="success" startIcon={<PlayArrowIcon />} onClick={handleContinue}>
-                    Continuar Tarefa
-                </Button>
-                <Button variant="outlined" color="error" startIcon={<StopIcon />} onClick={() => {
-                    setIsPaused(false);
-                    setActiveEntry(null);
-                    setTime(0);
-                }}>
-                    Finalizar e Zerar
-                </Button>
-            </>
-        );
     }
   };
 
