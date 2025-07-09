@@ -1,8 +1,9 @@
 // backend/src/controllers/taskController.js
-const pool = require('../config/db');
+const getPool = require('../config/db');
 
 // Listar todas as tarefas
 exports.getAllTasks = async (req, res) => {
+  const pool = getPool();
   try {
     const { rows } = await pool.query('SELECT * FROM Tasks ORDER BY name ASC');
     res.json(rows);

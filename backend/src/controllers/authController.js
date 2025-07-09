@@ -1,13 +1,15 @@
 // backend/src/controllers/authController.js
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const pool = require('../config/db');
+const getPool = require('../config/db');
 require('dotenv').config();
 
 exports.login = async (req, res) => {
   const { username, password } = req.body;
   console.log('Attempting login for username:', username);
   console.log('Password provided:', password);
+
+  const pool = getPool();
 
   try {
     // 1. Verificar se o usuário existe

@@ -1,8 +1,9 @@
 // backend/src/controllers/clientController.js
-const pool = require('../config/db');
+const getPool = require('../config/db');
 
 // Listar todos os clientes (ordenados alfabeticamente)
 exports.getAllClients = async (req, res) => {
+  const pool = getPool();
   try {
     const { rows } = await pool.query('SELECT * FROM Clients ORDER BY name ASC');
     res.json(rows);

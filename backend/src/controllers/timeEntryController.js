@@ -1,8 +1,9 @@
 // backend/src/controllers/timeEntryController.js
-const pool = require('../config/db');
+const getPool = require('../config/db');
 
 // Iniciar registro de tempo (Usuário Comum)
 exports.startTimeEntry = async (req, res) => {
+  const pool = getPool();
   const { taskId, clientId } = req.body;
   const userId = req.user.id; // Obtido do token JWT no middleware de autenticação
 
@@ -41,6 +42,7 @@ exports.startTimeEntry = async (req, res) => {
 
 // Finalizar registro de tempo (Usuário Comum)
 exports.endTimeEntry = async (req, res) => {
+  const pool = getPool();
   const { id } = req.params; // ID da entrada de tempo a ser finalizada
   const userId = req.user.id; // Para garantir que o usuário só finalize suas próprias entradas
 
@@ -75,6 +77,7 @@ exports.endTimeEntry = async (req, res) => {
 
 // Obter todas as entradas de tempo de um usuário
 exports.getUserTimeEntries = async (req, res) => {
+  const pool = getPool();
   const targetUserId = req.params.userId;
   const requestingUserRole = req.user.role;
   const requestingUserId = req.user.id;
@@ -122,6 +125,7 @@ exports.getUserTimeEntries = async (req, res) => {
 
 // Cancelar/deletar uma entrada de tempo ativa (em andamento)
 exports.cancelActiveEntry = async (req, res) => {
+  const pool = getPool();
   const userId = req.user.id;
 
   try {
