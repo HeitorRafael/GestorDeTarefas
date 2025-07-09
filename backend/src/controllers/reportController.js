@@ -1,5 +1,5 @@
 // backend/src/controllers/reportController.js
-const pool = require('../config/db');
+const getPool = require('../config/db');
 const { format } = require('date-fns'); // Usaremos date-fns para manipulação de datas
 
 // Para instalar date-fns: npm install date-fns
@@ -45,6 +45,7 @@ const formatDuration = (seconds) => {
 
 // 1. Tempo gasto por tarefa no dia
 exports.getDailyTaskReport = async (req, res) => {
+  const pool = getPool();
   const targetUserId = getUserIdFilter(req);
   const { date } = req.query; // Formato esperado: YYYY-MM-DD
 
@@ -89,6 +90,7 @@ exports.getDailyTaskReport = async (req, res) => {
 
 // 2. Tempo gasto por tarefa na semana
 exports.getWeeklyTaskReport = async (req, res) => {
+  const pool = getPool();
   const targetUserId = getUserIdFilter(req);
   const { weekNumber, year } = req.query; // Ex: weekNumber=25, year=2024
 
@@ -133,6 +135,7 @@ exports.getWeeklyTaskReport = async (req, res) => {
 
 // 3. Clientes que mais demandam tempo
 exports.getClientDemandReport = async (req, res) => {
+  const pool = getPool();
   const targetUserId = getUserIdFilter(req);
   const { startDate, endDate } = req.query; // Formato YYYY-MM-DD
 
@@ -177,6 +180,7 @@ exports.getClientDemandReport = async (req, res) => {
 
 // 4. Tarefas que mais demandam tempo (geral ou por usuário)
 exports.getTaskDemandReport = async (req, res) => {
+  const pool = getPool();
   const targetUserId = getUserIdFilter(req);
   const { startDate, endDate } = req.query; // Formato YYYY-MM-DD
 
@@ -221,6 +225,7 @@ exports.getTaskDemandReport = async (req, res) => {
 
 // 5. Tempo gasto em cada tarefa por cliente
 exports.getTaskByClientReport = async (req, res) => {
+  const pool = getPool();
   const targetUserId = getUserIdFilter(req);
   const { startDate, endDate } = req.query; // Formato YYYY-MM-DD
 

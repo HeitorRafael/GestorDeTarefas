@@ -15,11 +15,10 @@ exports.getAllClients = async (req, res) => {
 
 // Adicionar novo cliente (Admin Only)
 exports.addClient = async (req, res) => {
+  const pool = getPool();
   const { name } = req.body;
 
   try {
-    // Verificar se o cliente já existe
-    const { rows } = await pool.query('SELECT * FROM Clients WHERE name = $1', [name]);
     if (rows.length > 0) {
       return res.status(400).json({ msg: 'Cliente com este nome já existe.' });
     }
@@ -37,6 +36,7 @@ exports.addClient = async (req, res) => {
 
 // Excluir cliente (Admin Only)
 exports.deleteClient = async (req, res) => {
+  const pool = getPool();
   const { id } = req.params;
 
   try {

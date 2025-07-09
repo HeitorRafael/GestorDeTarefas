@@ -9,16 +9,13 @@ import Typography from '@mui/material/Typography';
 import LoginPage from './pages/LoginPage';
 import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/MainLayout';
-import UserDashboard from './pages/UserDashboard'; // <<< Importe o UserDashboard real
-
+import UserDashboard from './pages/UserDashboard';
+import AdminManagementScreen from './pages/AdminManagementScreen'; // Importe o AdminManagementScreen real
 import { useAuth } from './contexts/AuthContext';
+import { lazy } from 'react';
 
-// Componentes de dashboard temporários (se ainda existirem, remova-os ou ajuste conforme necessário)
-// const MainDashboard = () => <Typography variant="h4" sx={{ p: 4 }}>Main Dashboard (Comum)</Typography>;
-// const UserDashboard = () => <Typography variant="h4" sx={{ p: 4 }}>User Dashboard (Comum)</Typography>;
-const AdminDashboard = () => <Typography variant="h4" sx={{ p: 4 }}>Admin Dashboard (Admin)</Typography>;
-const AdminManagementScreen = () => <Typography variant="h4" sx={{ p: 4 }}>Gerenciar Usuários (Admin)</Typography>;
-const AdminSettingsScreen = () => <Typography variant="h4" sx={{ p: 4 }}>Configurações Admin</Typography>;
+const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
+const AdminSettingsScreen = lazy(() => import('./pages/AdminSettingsScreen'));
 
 function App() {
   const { loading } = useAuth();

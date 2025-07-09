@@ -26,8 +26,8 @@ initializeDatabase().then(() => {
   // Definir Rotas
   app.use('/api/auth', authRoutes);
   app.use('/api/admin/users', userRoutes);
-  app.use('/api/tasks', taskRoutes);
-  app.use('/api/clients', clientRoutes);
+  app.use('/api/admin/tasks', taskRoutes);
+  app.use('/api/admin/clients', clientRoutes);
   app.use('/api/time-entries', timeEntryRoutes);
   app.use('/api/reports', reportRoutes); // Certifique-se que esta linha está presente e correta
 
@@ -42,4 +42,10 @@ initializeDatabase().then(() => {
   });
 }).catch(err => {
   console.error('Falha ao iniciar o servidor devido a erro no DB:', err);
+});
+
+// Middleware de tratamento de erros global
+app.use((err, req, res, next) => {
+  console.error('Erro não tratado:', err.stack);
+  res.status(500).send('Erro interno do servidor.');
 });

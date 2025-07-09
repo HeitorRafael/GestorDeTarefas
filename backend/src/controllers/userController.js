@@ -1,9 +1,10 @@
 // backend/src/controllers/userController.js
 const bcrypt = require('bcryptjs');
-const pool = require('../config/db');
+const getPool = require('../config/db');
 
 // Cadastrar novo usuário (Admin Only)
 exports.registerUser = async (req, res) => {
+  const pool = getPool();
   const { username, password, role = 'common' } = req.body; // Default role é 'common'
 
   try {
@@ -32,6 +33,7 @@ exports.registerUser = async (req, res) => {
 
 // Excluir usuário (Admin Only)
 exports.deleteUser = async (req, res) => {
+  const pool = getPool();
   const { id } = req.params; // ID do usuário a ser excluído
 
   try {
@@ -45,5 +47,17 @@ exports.deleteUser = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Erro no servidor ao excluir usuário.');
+  }
+};
+
+// Listar todos os usuários (Admin Only)
+exports.getAllUsers = async (req, res) => {
+  const pool = getPool();
+  try {
+    const { rows } = await pool.query('SELECT id, username, role FROM Users ORDER BY username ASC');
+    res.json(rows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao listar usuários.');
   }
 };

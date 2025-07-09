@@ -10,6 +10,11 @@ const adminAuthMiddleware = require('../middleware/adminAuth'); // Middleware pa
 // @access  Private (Admin)
 router.post('/', authMiddleware, adminAuthMiddleware, userController.registerUser);
 
+// @route   GET /api/admin/users
+// @desc    Listar todos os usuários (Admin Only)
+// @access  Private (Admin)
+router.get('/', authMiddleware, adminAuthMiddleware, userController.getAllUsers);
+
 // @route   DELETE /api/admin/users/:id
 // @desc    Excluir usuário (Admin Only)
 // @access  Private (Admin)

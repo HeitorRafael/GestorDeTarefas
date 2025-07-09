@@ -15,11 +15,10 @@ exports.getAllTasks = async (req, res) => {
 
 // Adicionar nova tarefa (Admin Only)
 exports.addTask = async (req, res) => {
+  const pool = getPool();
   const { name } = req.body;
 
   try {
-    // Verificar se a tarefa já existe
-    const { rows } = await pool.query('SELECT * FROM Tasks WHERE name = $1', [name]);
     if (rows.length > 0) {
       return res.status(400).json({ msg: 'Tarefa com este nome já existe.' });
     }
@@ -37,6 +36,7 @@ exports.addTask = async (req, res) => {
 
 // Excluir tarefa (Admin Only)
 exports.deleteTask = async (req, res) => {
+  const pool = getPool();
   const { id } = req.params;
 
   try {

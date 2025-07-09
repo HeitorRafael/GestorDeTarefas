@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
     console.log('Password from DB:', user.password);
 
     // 2. Comparar a senha fornecida com a senha hashed no banco de dados
-    const isMatch = (password === user.password); // TEMPORARY - DO NOT USE IN PRODUCTION
+    const isMatch = await bcrypt.compare(password, user.password);
     console.log('Password match result:', isMatch);
     if (!isMatch) {
       return res.status(400).json({ msg: 'Credenciais inválidas.' });

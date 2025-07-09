@@ -16,7 +16,8 @@ async function initializeDatabase() {
     console.log('Tabela Users verificada/criada.');
 
     // Inserir ou atualizar um usuário admin padrão
-    const hashedPassword = 'admin123'; // Senha padrão: admin123 (TEMPORARY - DO NOT USE IN PRODUCTION)
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash('admin123', salt); // Senha padrão: admin123
     const { rows } = await pool.query("SELECT * FROM Users WHERE username = 'admin'");
     if (rows.length === 0) {
       await pool.query(

@@ -101,6 +101,12 @@ const getMenuItems = (props) => {
       leftIcon: <DashboardIcon />,
     },
     {
+      value: '/admin-management',
+      visible: isAuthorised && auth.user && auth.user.role === 'admin',
+      primaryText: 'Gerenciamento de Admin', // Hardcoded for now, can be internationalized later
+      leftIcon: <SettingsIcon />,
+    },
+    {
       primaryText: intl.formatMessage({ id: 'demos', defaultMessage: 'Demos' }),
       primaryTogglesNestedList: true,
       leftIcon: <Web />,
