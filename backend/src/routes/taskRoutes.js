@@ -8,7 +8,7 @@ const adminAuthMiddleware = require('../middleware/adminAuth');
 // @route   GET /api/tasks
 // @desc    Listar todas as tarefas (todos os usuários podem ver)
 // @access  Private (usuário comum e admin)
-router.get('/', authMiddleware, adminAuthMiddleware, taskController.getAllTasks);
+router.get('/', authMiddleware, taskController.getAllTasks);
 
 // @route   POST /api/admin/tasks
 // @desc    Adicionar nova tarefa (Admin Only)

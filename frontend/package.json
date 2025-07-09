@@ -8,6 +8,7 @@
     "@fontsource/roboto": "^4.5.8",
     "@mui/icons-material": "^5.17.1",
     "@mui/material": "^5.17.1",
+    "@mui/x-date-pickers": "^8.7.0",
     "axios": "^1.10.0",
     "base-shell": "^2.5.14",
     "date-fns": "^4.1.0",

@@ -34,7 +34,7 @@ function ClientTaskSelector({ onSelectClientTask }) {
             'x-auth-token': token,
           },
         };
-        const res = await axios.get(`${API_BASE_URL}/admin/clients/`, config);
+        const res = await axios.get(`${API_BASE_URL}/clients/`, config);
         setClients(res.data);
       } catch (err) {
         console.error('Erro ao buscar clientes:', err.response ? err.response.data.msg : err.message);
@@ -58,7 +58,7 @@ function ClientTaskSelector({ onSelectClientTask }) {
               'x-auth-token': token,
             },
           };
-          const res = await axios.get(`${API_BASE_URL}/admin/tasks/`, config);
+          const res = await axios.get(`${API_BASE_URL}/tasks/`, config);
           setTasks(res.data); // Seta TODAS as tarefas
         } catch (err) {
           console.error('Erro ao buscar tarefas:', err.response ? err.response.data.msg : err.message);

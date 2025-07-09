@@ -26,8 +26,8 @@ initializeDatabase().then(() => {
   // Definir Rotas
   app.use('/api/auth', authRoutes);
   app.use('/api/admin/users', userRoutes);
-  app.use('/api/admin/tasks', taskRoutes);
-  app.use('/api/admin/clients', clientRoutes);
+  app.use('/api/tasks', taskRoutes);
+  app.use('/api/clients', clientRoutes);
   app.use('/api/time-entries', timeEntryRoutes);
   app.use('/api/reports', reportRoutes); // Certifique-se que esta linha está presente e correta
 

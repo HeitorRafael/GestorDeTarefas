@@ -9,7 +9,8 @@ import Typography from '@mui/material/Typography';
 import LoginPage from './pages/LoginPage';
 import PrivateRoute from './components/PrivateRoute';
 import MainLayout from './components/MainLayout';
-import UserDashboard from './pages/UserDashboard';
+import MainDashboard from './pages/MainDashboard'; // Importe o MainDashboard real
+import UserDashboard from './pages/UserDashboard'; // Importe o UserDashboard real
 import AdminManagementScreen from './pages/AdminManagementScreen'; // Importe o AdminManagementScreen real
 import { useAuth } from './contexts/AuthContext';
 import { lazy } from 'react';
@@ -36,9 +37,8 @@ function App() {
       {/* Rotas Protegidas que usam o MainLayout */}
       <Route element={<PrivateRoute />}>
         <Route element={<MainLayout />}>
-          <Route path="/dashboard" element={<UserDashboard />} /> {/* <<< Use o UserDashboard real aqui */}
-          {/* A rota /user-dashboard se for específica, pode ser redirecionada para /dashboard ou removida se não for necessária */}
-          <Route path="/user-dashboard" element={<UserDashboard />} /> {/* Pode manter, se quiser que ambas as URLs funcionem */}
+          <Route path="/dashboard" element={<MainDashboard />} />
+          <Route path="/user-dashboard" element={<UserDashboard />} />
           <Route path="/time-tracking" element={<Typography variant="h4" sx={{ p: 4 }}>Registro de Tempo</Typography>} />
         </Route>
       </Route>
