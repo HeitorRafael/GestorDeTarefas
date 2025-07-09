@@ -108,8 +108,8 @@ function TimeEntryList({ refreshTrigger }) {
                   <Chip label={entry.id} size="small" />
                 </TableCell>
                 {/* Formatação de data no frontend */}
-                <TableCell>{entry.startTime ? format(new Date(entry.startTime), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }) : 'N/A'}</TableCell>
-                <TableCell>{entry.endTime ? format(new Date(entry.endTime), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }) : 'Em andamento'}</TableCell>
+                <TableCell>{entry.starttime ? format(new Date(entry.starttime), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }) : 'N/A'}</TableCell>
+                <TableCell>{entry.endtime ? format(new Date(entry.endtime), 'dd/MM/yyyy HH:mm:ss', { locale: ptBR }) : 'Em andamento'}</TableCell>
                 <TableCell>{entry.clientname}</TableCell>
                 <TableCell>{entry.taskname}</TableCell>
                 <TableCell align="right">{formatDuration(entry.duration)}</TableCell>
