@@ -118,7 +118,7 @@ exports.getUserTimeEntries = async (req, res) => {
     // Retorne os dados brutos de data/hora (ISO strings)
     res.json(rows);
   } catch (err) {
-    console.error(err.message);
+    console.error('Erro no servidor ao obter entradas de tempo do usuário.', err.message);
     res.status(500).send('Erro no servidor ao obter entradas de tempo do usuário.');
   }
 };
