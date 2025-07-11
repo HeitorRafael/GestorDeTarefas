@@ -1,73 +1,60 @@
-import React from 'react'
-import Scrollbar from 'material-ui-shell/lib/components/Scrollbar/Scrollbar'
-import SelectableMenuList from 'material-ui-shell/lib/containers/SelectableMenuList'
-import { useAddToHomeScreen } from 'base-shell/lib/providers/AddToHomeScreen'
-import { useAuth } from 'base-shell/lib/providers/Auth'
-import { useConfig } from 'base-shell/lib/providers/Config'
-import { useNavigate, useLocation } from 'react-router-dom'
-import { useIntl } from 'react-intl'
-import { useLocale } from 'base-shell/lib/providers/Locale'
-import { useMenu } from 'material-ui-shell/lib/providers/Menu'
-import { useTheme as useAppTheme } from 'material-ui-shell/lib/providers/Theme'
-import getMenuItems from '../../config/menuItems'
+import React from 'react';
+import { List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from '@mui/material';
+import DashboardIcon from '@mui/icons-material/Dashboard';
+import TimerIcon from '@mui/icons-material/Timer';
+import PeopleIcon from '@mui/icons-material/People';
+import SettingsIcon from '@mui/icons-material/Settings';
+import { Link } from 'react-router-dom';
+import { useAuth } from '../../contexts/AuthContext';
 
-const Menu = (props) => {
-  const intl = useIntl()
-  const navigate = useNavigate()
-  const location = useLocation()
-  const auth = useAuth()
-  const menuContext = useMenu()
-  const a2HSContext = useAddToHomeScreen()
-  const { toggleThis, isMiniMode, isMiniSwitchVisibility } = menuContext || {}
-  const { appConfig } = useConfig()
-  const { setLocale, locale = 'en' } = useLocale()
-  const themeContext = useAppTheme()
-
-  const menuItems = getMenuItems({
-    intl,
-    locale,
-    updateLocale: setLocale,
-    menuContext,
-    themeContext,
-    appConfig,
-    a2HSContext,
-    auth,
-    ...props,
-  }).filter((item) => {
-    return item.visible !== false
-  })
-
-  const index = location ? location.pathname : '/'
-
-  const handleChange = (event, index) => {
-    if (index !== undefined) {
-      toggleThis('isMobileMenuOpen', false)
-    }
-    if (index !== undefined && index !== Object(index)) {
-      navigate(index)
-    }
-  }
+const MenuContent = () => {
+  const { isAdmin } = useAuth();
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-        height: '100%',
-        /*  direction: isRTL ? 'rtl' : 'ltr' */
-      }}
-    >
-      <Scrollbar style={{ flex: 1 }}>
-        <SelectableMenuList
-          key={isMiniSwitchVisibility + themeContext.isRTL}
-          onIndexChange={handleChange}
-          useMinified={isMiniMode}
-          items={menuItems}
-          index={index}
-        />
-      </Scrollbar>
-    </div>
-  )
-}
+    <List>
+      {/* Itens de navegação comuns */}
+      <ListItem disablePadding sx={{ display: 'block' }}>
+        <ListItemButton component={Link} to="/dashboard">
+          <ListItemIcon>
+            <DashboardIcon />
+          </ListItemIcon>
+          <ListItemText primary="Dashboard" />
+        </ListItemButton>
+      </ListItem>
 
-export default Menu
+      <ListItem disablePadding sx={{ display: 'block' }}>
+        <ListItemButton component={Link} to="/time-tracking">
+          <ListItemIcon>
+            <TimerIcon />
+          </ListItemIcon>
+          <ListItemText primary="Registro de Tempo" />
+        </ListItemButton>
+      </ListItem>
+
+      {/* Itens de navegação apenas para Admin */}
+      {isAdmin && (
+        <>
+          <Divider />
+          <ListItem disablePadding sx={{ display: 'block' }}>
+            <ListItemButton component={Link} to="/admin-management">
+              <ListItemIcon>
+                <PeopleIcon />
+              </ListItemIcon>
+              <ListItemText primary="Gerenciar Usuários" />
+            </ListItemButton>
+          </ListItem>
+          <ListItem disablePadding sx={{ display: 'block' }}>
+            <ListItemButton component={Link} to="/admin-settings">
+              <ListItemIcon>
+                <SettingsIcon />
+              </ListItemIcon>
+              <ListItemText primary="Configurações Admin" />
+            </ListItemButton>
+          </ListItem>
+        </>
+      )}
+    </List>
+  );
+};
+
+export default MenuContent;

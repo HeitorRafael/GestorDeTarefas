@@ -77,7 +77,7 @@ function AdminManagementScreen() {
           'x-auth-token': token,
         },
       };
-      const res = await axios.get(`${API_BASE_URL}/admin/tasks/`, config);
+      const res = await axios.get(`${API_BASE_URL}/tasks/admin/`, config);
       setTasks(res.data);
     } catch (err) {
       console.error('Erro ao buscar tarefas:', err.response ? err.response.data.msg : err.message);
@@ -93,7 +93,7 @@ function AdminManagementScreen() {
           'x-auth-token': token,
         },
       };
-      const res = await axios.get(`${API_BASE_URL}/admin/clients/`, config);
+      const res = await axios.get(`${API_BASE_URL}/clients/admin/`, config);
       setClients(res.data);
     } catch (err) {
       console.error('Erro ao buscar clientes:', err.response ? err.response.data.msg : err.message);

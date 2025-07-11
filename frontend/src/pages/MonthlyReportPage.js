@@ -30,19 +30,14 @@ const formatDuration = (seconds) => {
   return `${hours}:${minutes}:${remainingSeconds}`;
 };
 
-const formatDateTime = (isoString) => {
-  if (!isoString) return '-';
-  return format(new Date(isoString), 'dd/MM/yyyy HH:mm:ss');
-};
-
-function UserDashboard() {
+function MonthlyReportPage() {
   const { token, user } = useAuth();
-  const [timeEntries, setTimeEntries] = useState([]); // Alterado de dailyReport para timeEntries
+  const [monthlySummary, setMonthlySummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
 
-  const fetchTimeEntries = useCallback(async () => { // Alterado de fetchDailyReport para fetchTimeEntries
+  const fetchMonthlySummary = useCallback(async () => {
     if (!token || !user || !user.id) {
       setLoading(false);
       return;
@@ -55,33 +50,34 @@ function UserDashboard() {
           'x-auth-token': token,
         },
         params: {
-          date: format(selectedDate, 'yyyy-MM-dd'), // YYYY-MM-DD
+          month: format(selectedDate, 'M'), // Mês sem zero à esquerda
+          year: format(selectedDate, 'yyyy'),
         },
       };
-      // Alterada a URL da API
-      const res = await axios.get(`${API_BASE_URL}/time-entries/user/${user.id}`, config);
-      setTimeEntries(res.data); // Alterado de setDailyReport para setTimeEntries
+      const res = await axios.get(`${API_BASE_URL}/time-entries/user/${user.id}/monthly-summary`, config);
+      setMonthlySummary(res.data);
       setLoading(false);
     } catch (err) {
-      console.error('Erro ao buscar entradas de tempo:', err.response ? err.response.data.msg : err.message);
-      setError('Erro ao carregar entradas de tempo. Por favor, tente novamente.');
+      console.error('Erro ao buscar resumo mensal:', err.response ? err.response.data.msg : err.message);
+      setError('Erro ao carregar resumo mensal. Por favor, tente novamente.');
       setLoading(false);
     }
   }, [token, user, selectedDate]);
 
   useEffect(() => {
-    fetchTimeEntries(); // Alterado de fetchDailyReport para fetchTimeEntries
-  }, [fetchTimeEntries]);
+    fetchMonthlySummary();
+  }, [fetchMonthlySummary]);
 
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Minhas Entradas de Tempo Diárias
+        Relatório Mensal de Tempo
       </Typography>
 
       <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={ptBR}>
         <DatePicker
-          label="Selecionar Data"
+          views={['month', 'year']}
+          label="Selecionar Mês e Ano"
           value={selectedDate}
           onChange={(newValue) => {
             setSelectedDate(newValue);
@@ -93,32 +89,28 @@ function UserDashboard() {
       {loading ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
           <CircularProgress />
-          <Typography sx={{ ml: 2 }}>Carregando entradas de tempo...</Typography>
+          <Typography sx={{ ml: 2 }}>Carregando resumo mensal...</Typography>
         </Box>
       ) : error ? (
         <Alert severity="error">{error}</Alert>
-      ) : timeEntries.length === 0 ? (
-        <Alert severity="info">Nenhuma entrada de tempo encontrada para a data selecionada.</Alert>
+      ) : monthlySummary.length === 0 ? (
+        <Alert severity="info">Nenhum dado encontrado para o mês selecionado.</Alert>
       ) : (
         <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="entradas de tempo diárias">
+          <Table sx={{ minWidth: 650 }} aria-label="resumo mensal de tempo">
             <TableHead>
               <TableRow>
-                <TableCell>Tarefa</TableCell>
                 <TableCell>Cliente</TableCell>
-                <TableCell>Início</TableCell>
-                <TableCell>Fim</TableCell>
-                <TableCell align="right">Duração</TableCell>
+                <TableCell>Tarefa</TableCell>
+                <TableCell align="right">Duração Total</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {timeEntries.map((entry) => (
-                <TableRow key={entry.id}>
-                  <TableCell>{entry.taskName}</TableCell>
-                  <TableCell>{entry.clientName}</TableCell>
-                  <TableCell>{formatDateTime(entry.startTime)}</TableCell>
-                  <TableCell>{formatDateTime(entry.endTime)}</TableCell>
-                  <TableCell align="right">{formatDuration(entry.duration)}</TableCell>
+              {monthlySummary.map((row, index) => (
+                <TableRow key={index}>
+                  <TableCell>{row.clientName}</TableCell>
+                  <TableCell>{row.taskName}</TableCell>
+                  <TableCell align="right">{formatDuration(row.totalDuration)}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -129,4 +121,4 @@ function UserDashboard() {
   );
 }
 
-export default UserDashboard;
+export default MonthlyReportPage;

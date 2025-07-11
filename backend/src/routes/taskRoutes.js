@@ -10,6 +10,16 @@ const adminAuthMiddleware = require('../middleware/adminAuth');
 // @access  Private (usuário comum e admin)
 router.get('/', authMiddleware, taskController.getAllTasks);
 
+// @route   GET /api/admin/tasks
+// @desc    Listar todas as tarefas (Admin Only)
+// @access  Private (Admin)
+router.get('/admin', authMiddleware, adminAuthMiddleware, taskController.getAllTasks);
+
+// Rota de Teste Temporária - REMOVER DEPOIS
+router.get('/test-admin', (req, res) => {
+  res.send('Rota de teste /api/tasks/test-admin funcionando!');
+});
+
 // @route   POST /api/admin/tasks
 // @desc    Adicionar nova tarefa (Admin Only)
 // @access  Private (Admin)

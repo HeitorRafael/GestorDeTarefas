@@ -19,10 +19,14 @@ exports.addTask = async (req, res) => {
   const { name } = req.body;
 
   try {
+    // Primeiro, verifique se uma tarefa com o mesmo nome já existe
+    const { rows } = await pool.query('SELECT * FROM Tasks WHERE name = $1', [name]);
+
     if (rows.length > 0) {
       return res.status(400).json({ msg: 'Tarefa com este nome já existe.' });
     }
 
+    // Se não existir, insira a nova tarefa
     const newTask = await pool.query(
       'INSERT INTO Tasks (name) VALUES ($1) RETURNING *',
       [name]

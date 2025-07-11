@@ -81,14 +81,15 @@ exports.getUserTimeEntries = async (req, res) => {
   const targetUserId = req.params.userId;
   const requestingUserRole = req.user.role;
   const requestingUserId = req.user.id;
+  const date = req.query.date; // Obtém a data da query string (YYYY-MM-DD)
 
   if (requestingUserRole === 'common' && targetUserId !== requestingUserId.toString()) {
     return res.status(403).json({ msg: 'Acesso negado. Usuário comum só pode ver suas próprias entradas.' });
   }
 
   try {
-    const { rows } = await pool.query(
-      `SELECT
+    let query = `
+      SELECT
           te.id,
           te.userId,
           u.username,
@@ -104,18 +105,18 @@ exports.getUserTimeEntries = async (req, res) => {
        JOIN Tasks t ON te.taskId = t.id
        JOIN Clients c ON te.clientId = c.id
        WHERE te.userId = $1
-       ORDER BY te.startTime DESC`,
-      [targetUserId]
-    );
+    `;
+    const queryParams = [targetUserId];
 
-    // >>>>> Remova a formatação de data AQUI. Faça isso no frontend. <<<<<
-    // const formattedRows = rows.map(entry => ({
-    //   ...entry,
-    //   startTime: new Date(entry.startTime).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }),
-    //   endTime: entry.endTime ? new Date(entry.endTime).toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) : null,
-    // }));
+    if (date) {
+      query += ` AND DATE(te.startTime) = $2`;
+      queryParams.push(date);
+    }
 
-    // Retorne os dados brutos de data/hora (ISO strings)
+    query += ` ORDER BY te.startTime DESC`;
+
+    const { rows } = await pool.query(query, queryParams);
+
     res.json(rows);
   } catch (err) {
     console.error('Erro no servidor ao obter entradas de tempo do usuário.', err.message);
@@ -148,5 +149,47 @@ exports.cancelActiveEntry = async (req, res) => {
   } catch (err) {
     console.error('Erro ao cancelar a tarefa:', err.message);
     res.status(500).send('Erro no servidor ao cancelar a tarefa.');
+  }
+};
+
+// Obter resumo mensal de tempo gasto por tarefa e cliente
+exports.getMonthlyTimeSummary = async (req, res) => {
+  const pool = getPool();
+  const targetUserId = req.params.userId;
+  const requestingUserRole = req.user.role;
+  const requestingUserId = req.user.id;
+  const { month, year } = req.query; // Mês e Ano da query string
+
+  // Validação de acesso
+  if (requestingUserRole === 'common' && targetUserId !== requestingUserId.toString()) {
+    return res.status(403).json({ msg: 'Acesso negado. Usuário comum só pode ver seus próprios resumos.' });
+  }
+
+  // Validação de entrada para mês e ano
+  if (!month || !year || isNaN(month) || isNaN(year) || month < 1 || month > 12 || year < 2000 || year > 2100) {
+    return res.status(400).json({ msg: 'Mês e ano válidos são obrigatórios (ex: ?month=7&year=2023).' });
+  }
+
+  try {
+    const { rows } = await pool.query(
+      `SELECT
+          c.name AS clientName,
+          t.name AS taskName,
+          SUM(te.duration) AS totalDuration
+       FROM TimeEntries te
+       JOIN Clients c ON te.clientId = c.id
+       JOIN Tasks t ON te.taskId = t.id
+       WHERE te.userId = $1
+         AND EXTRACT(MONTH FROM te.startTime) = $2
+         AND EXTRACT(YEAR FROM te.startTime) = $3
+       GROUP BY c.name, t.name
+       ORDER BY c.name, t.name`,
+      [targetUserId, parseInt(month), parseInt(year)]
+    );
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Erro no servidor ao obter resumo mensal de tempo:', err.message);
+    res.status(500).send('Erro no servidor ao obter resumo mensal de tempo.');
   }
 };

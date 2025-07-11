@@ -10,6 +10,11 @@ const adminAuthMiddleware = require('../middleware/adminAuth');
 // @access  Private (usuário comum e admin)
 router.get('/', authMiddleware, clientController.getAllClients);
 
+// @route   GET /api/admin/clients
+// @desc    Listar todos os clientes (Admin Only)
+// @access  Private (Admin)
+router.get('/admin', authMiddleware, adminAuthMiddleware, clientController.getAllClients);
+
 // @route   POST /api/admin/clients
 // @desc    Adicionar novo cliente (Admin Only)
 // @access  Private (Admin)
