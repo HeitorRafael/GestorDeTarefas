@@ -24,6 +24,11 @@ router.get('/user/:userId', authMiddleware, timeEntryController.getUserTimeEntri
 // @access  Private (Usuário Comum/Admin)
 router.get('/user/:userId/monthly-summary', authMiddleware, timeEntryController.getMonthlyTimeSummary);
 
+// @route   GET /api/time-entries/user/:userId/weekly-summary
+// @desc    Obter resumo semanal de tempo gasto por tarefa e cliente para um usuário
+// @access  Private (Usuário Comum/Admin)
+router.get('/user/:userId/weekly-summary', authMiddleware, timeEntryController.getWeeklyTimeSummary);
+
 // @route   DELETE /api/time-entries/active
 // @desc    Cancelar (deletar) a entrada de tempo ativa do usuário
 // @access  Private (Usuário Comum)

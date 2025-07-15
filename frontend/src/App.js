@@ -12,7 +12,7 @@ import MainLayout from './components/MainLayout';
 import MainDashboard from './pages/MainDashboard'; // Importe o MainDashboard real
 import UserDashboard from './pages/UserDashboard'; // Importe o UserDashboard real
 import AdminManagementScreen from './pages/AdminManagementScreen'; // Importe o AdminManagementScreen real
-import MonthlyReportPage from './pages/MonthlyReportPage'; // Importe a nova página de relatório mensal
+import TimeReportPage from './pages/TimeReportPage'; // Importe a nova página de relatório de tempo
 import { useAuth } from './contexts/AuthContext';
 import { lazy } from 'react';
 
@@ -40,8 +40,8 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<MainDashboard />} />
           <Route path="/user-dashboard" element={<UserDashboard />} />
-          <Route path="/monthly-report" element={<MonthlyReportPage />} />
-          <Route path="/time-tracking" element={<MonthlyReportPage />} />
+          <Route path="/monthly-report" element={<TimeReportPage />} />
+          <Route path="/time-tracking" element={<TimeReportPage />} />
         </Route>
       </Route>
 

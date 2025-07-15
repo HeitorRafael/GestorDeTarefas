@@ -70,7 +70,7 @@ export function AuthProvider({ children }) {
 
       // Redireciona para o dashboard ou rota apropriada
       if (decodedPayload.user.role === 'admin') {
-        navigate('/admin-dashboard');
+        navigate('/time-tracking');
       } else {
         navigate('/dashboard');
       }
