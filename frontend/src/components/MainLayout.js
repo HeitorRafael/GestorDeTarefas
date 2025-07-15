@@ -23,6 +23,9 @@ import TimerIcon from '@mui/icons-material/Timer';
 import PeopleIcon from '@mui/icons-material/People';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AssignmentIcon from '@mui/icons-material/Assignment';
+import GroupIcon from '@mui/icons-material/Group';
+import BusinessIcon from '@mui/icons-material/Business';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, Outlet } from 'react-router-dom';
 import { useThemeToggle } from '../contexts/ThemeContext';
@@ -170,9 +173,25 @@ function MainLayout() {
               <ListItem disablePadding sx={{ display: 'block' }}>
                 <ListItemButton component={Link} to="/admin-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
                   <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                    <PeopleIcon />
+                    <GroupIcon />
                   </ListItemIcon>
                   <ListItemText primary="Gerenciar Usuários" sx={{ opacity: open ? 1 : 0 }} />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding sx={{ display: 'block' }}>
+                <ListItemButton component={Link} to="/task-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                  <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                    <AssignmentIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Gerenciamento de Tarefas" sx={{ opacity: open ? 1 : 0 }} />
+                </ListItemButton>
+              </ListItem>
+              <ListItem disablePadding sx={{ display: 'block' }}>
+                <ListItemButton component={Link} to="/client-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                  <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                    <BusinessIcon />
+                  </ListItemIcon>
+                  <ListItemText primary="Gerenciamento de Clientes" sx={{ opacity: open ? 1 : 0 }} />
                 </ListItemButton>
               </ListItem>
               <ListItem disablePadding sx={{ display: 'block' }}>

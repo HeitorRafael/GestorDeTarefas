@@ -28,8 +28,6 @@ const API_BASE_URL = 'http://localhost:5000/api';
 function AdminManagementScreen() {
   const { token } = useAuth();
   const [users, setUsers] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
@@ -39,11 +37,9 @@ function AdminManagementScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('common');
 
-  // State for new task form
-  const [newTaskName, setNewTaskName] = useState('');
+  
 
-  // State for new client form
-  const [newClientName, setNewClientName] = useState('');
+  
 
   const fetchUsers = useCallback(async () => {
     console.log('fetchUsers: Token:', token);
@@ -69,43 +65,13 @@ function AdminManagementScreen() {
     }
   }, [token]);
 
-  const fetchTasks = useCallback(async () => {
-    if (!token) return;
-    try {
-      const config = {
-        headers: {
-          'x-auth-token': token,
-        },
-      };
-      const res = await axios.get(`${API_BASE_URL}/tasks/admin/`, config);
-      setTasks(res.data);
-    } catch (err) {
-      console.error('Erro ao buscar tarefas:', err.response ? err.response.data.msg : err.message);
-      setError('Erro ao carregar tarefas. Por favor, tente novamente.');
-    }
-  }, [token]);
+  
 
-  const fetchClients = useCallback(async () => {
-    if (!token) return;
-    try {
-      const config = {
-        headers: {
-          'x-auth-token': token,
-        },
-      };
-      const res = await axios.get(`${API_BASE_URL}/clients/admin/`, config);
-      setClients(res.data);
-    } catch (err) {
-      console.error('Erro ao buscar clientes:', err.response ? err.response.data.msg : err.message);
-      setError('Erro ao carregar clientes. Por favor, tente novamente.');
-    }
-  }, [token]);
+  
 
   useEffect(() => {
     fetchUsers();
-    fetchTasks();
-    fetchClients();
-  }, [fetchUsers, fetchTasks, fetchClients]);
+  }, [fetchUsers]);
 
   const handleCreateUser = async (e) => {
     e.preventDefault();
@@ -155,97 +121,9 @@ function AdminManagementScreen() {
     }
   };
 
-  const handleCreateTask = async (e) => {
-    e.preventDefault();
-    try {
-      setSuccessMessage(null);
-      setError(null);
-      const config = {
-        headers: {
-          'x-auth-token': token,
-          'Content-Type': 'application/json',
-        },
-      };
-      await axios.post(
-        `${API_BASE_URL}/admin/tasks/`,
-        { name: newTaskName },
-        config
-      );
-      setSuccessMessage('Tarefa criada com sucesso!');
-      setNewTaskName('');
-      fetchTasks(); // Refresh task list
-    } catch (err) {
-      console.error('Erro ao criar tarefa:', err.response ? err.response.data.msg : err.message);
-      setError(`Erro ao criar tarefa: ${err.response?.data?.msg || err.message}`);
-    }
-  };
+  
 
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm('Tem certeza que deseja excluir esta tarefa?')) {
-      return;
-    }
-    try {
-      setSuccessMessage(null);
-      setError(null);
-      const config = {
-        headers: {
-          'x-auth-token': token,
-        },
-      };
-      await axios.delete(`${API_BASE_URL}/admin/tasks/${taskId}/`, config);
-      setSuccessMessage('Tarefa excluída com sucesso!');
-      fetchTasks(); // Refresh task list
-    } catch (err) {
-      console.error('Erro ao excluir tarefa:', err.response ? err.response.data.msg : err.message);
-      setError(`Erro ao excluir tarefa: ${err.response?.data?.msg || err.message}`);
-    }
-  };
-
-  const handleCreateClient = async (e) => {
-    e.preventDefault();
-    try {
-      setSuccessMessage(null);
-      setError(null);
-      const config = {
-        headers: {
-          'x-auth-token': token,
-          'Content-Type': 'application/json',
-        },
-      };
-      await axios.post(
-        `${API_BASE_URL}/admin/clients/`,
-        { name: newClientName },
-        config
-      );
-      setSuccessMessage('Cliente criado com sucesso!');
-      setNewClientName('');
-      fetchClients(); // Refresh client list
-    } catch (err) {
-      console.error('Erro ao criar cliente:', err.response ? err.response.data.msg : err.message);
-      setError(`Erro ao criar cliente: ${err.response?.data?.msg || err.message}`);
-    }
-  };
-
-  const handleDeleteClient = async (clientId) => {
-    if (!window.confirm('Tem certeza que deseja excluir este cliente?')) {
-      return;
-    }
-    try {
-      setSuccessMessage(null);
-      setError(null);
-      const config = {
-        headers: {
-          'x-auth-token': token,
-        },
-      };
-      await axios.delete(`${API_BASE_URL}/admin/clients/${clientId}/`, config);
-      setSuccessMessage('Cliente excluído com sucesso!');
-      fetchClients(); // Refresh client list
-    } catch (err) {
-      console.error('Erro ao excluir cliente:', err.response ? err.response.data.msg : err.message);
-      setError(`Erro ao excluir cliente: ${err.response?.data?.msg || err.message}`);
-    }
-  };
+  
 
   if (loading) {
     return (
@@ -259,7 +137,7 @@ function AdminManagementScreen() {
   return (
     <Box sx={{ mt: 4 }}>
       <Typography variant="h4" gutterBottom>
-        Gerenciamento de Admin
+        Gerenciar Usuários
       </Typography>
 
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
@@ -346,123 +224,9 @@ function AdminManagementScreen() {
         </TableContainer>
       )}
 
-      {/* Seção de Gerenciamento de Tarefas */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Gerenciamento de Tarefas
-      </Typography>
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Criar Nova Tarefa
-        </Typography>
-        <Box component="form" onSubmit={handleCreateTask} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            label="Nome da Tarefa"
-            variant="outlined"
-            value={newTaskName}
-            onChange={(e) => setNewTaskName(e.target.value)}
-            required
-          />
-          <Button type="submit" variant="contained" color="primary" startIcon={<AddIcon />}>
-            Criar Tarefa
-          </Button>
-        </Box>
-      </Paper>
+      
 
-      <Typography variant="h6" gutterBottom>
-        Tarefas Existentes
-      </Typography>
-      {tasks.length === 0 ? (
-        <Alert severity="info">Nenhuma tarefa encontrada.</Alert>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="lista de tarefas">
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Nome da Tarefa</TableCell>
-                <TableCell align="right">Ações</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {tasks.map((taskItem) => (
-                <TableRow key={taskItem.id}>
-                  <TableCell>{taskItem.id}</TableCell>
-                  <TableCell>{taskItem.name}</TableCell>
-                  <TableCell align="right">
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => handleDeleteTask(taskItem.id)}
-                    >
-                      Excluir
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
-
-      {/* Seção de Gerenciamento de Clientes */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Gerenciamento de Clientes
-      </Typography>
-      <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
-        <Typography variant="h6" gutterBottom>
-          Criar Novo Cliente
-        </Typography>
-        <Box component="form" onSubmit={handleCreateClient} sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <TextField
-            label="Nome do Cliente"
-            variant="outlined"
-            value={newClientName}
-            onChange={(e) => setNewClientName(e.target.value)}
-            required
-          />
-          <Button type="submit" variant="contained" color="primary" startIcon={<AddIcon />}>
-            Criar Cliente
-          </Button>
-        </Box>
-      </Paper>
-
-      <Typography variant="h6" gutterBottom>
-        Clientes Existentes
-      </Typography>
-      {clients.length === 0 ? (
-        <Alert severity="info">Nenhum cliente encontrado.</Alert>
-      ) : (
-        <TableContainer component={Paper}>
-          <Table sx={{ minWidth: 650 }} aria-label="lista de clientes">
-            <TableHead>
-              <TableRow>
-                <TableCell>ID</TableCell>
-                <TableCell>Nome do Cliente</TableCell>
-                <TableCell align="right">Ações</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {clients.map((clientItem) => (
-                <TableRow key={clientItem.id}>
-                  <TableCell>{clientItem.id}</TableCell>
-                  <TableCell>{clientItem.name}</TableCell>
-                  <TableCell align="right">
-                    <Button
-                      variant="outlined"
-                      color="error"
-                      startIcon={<DeleteIcon />}
-                      onClick={() => handleDeleteClient(clientItem.id)}
-                    >
-                      Excluir
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
-      )}
+      
     </Box>
   );
 }

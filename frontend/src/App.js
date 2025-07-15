@@ -1,5 +1,5 @@
 // frontend/src/App.js
-import React from 'react';
+import React, { Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -18,6 +18,8 @@ import { lazy } from 'react';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
 const AdminSettingsScreen = lazy(() => import('./pages/AdminSettingsScreen'));
+const TaskManagementPage = lazy(() => import('./pages/TaskManagementPage'));
+const ClientManagementPage = lazy(() => import('./pages/ClientManagementPage'));
 
 function App() {
   const { loading } = useAuth();
@@ -32,7 +34,13 @@ function App() {
   }
 
   return (
-    <Routes>
+    <Suspense fallback={
+      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+        <CircularProgress />
+        <Typography sx={{ ml: 2 }}>Carregando página...</Typography>
+      </Box>
+    }>
+      <Routes>
       <Route path="/login" element={<LoginPage />} />
 
       {/* Rotas Protegidas que usam o MainLayout */}
@@ -51,12 +59,15 @@ function App() {
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin-management" element={<AdminManagementScreen />} />
           <Route path="/admin-settings" element={<AdminSettingsScreen />} />
+          <Route path="/task-management" element={<TaskManagementPage />} />
+          <Route path="/client-management" element={<ClientManagementPage />} />
         </Route>
       </Route>
 
       <Route path="/" element={<Navigate to="/login" replace />} />
       <Route path="*" element={<Typography variant="h4" sx={{ p: 4 }}>Página não encontrada!</Typography>} />
     </Routes>
+    </Suspense>
   );
 }
 
