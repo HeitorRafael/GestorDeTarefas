@@ -158,7 +158,9 @@ exports.getMonthlyTimeSummary = async (req, res) => {
   const targetUserId = req.params.userId;
   const requestingUserRole = req.user.role;
   const requestingUserId = req.user.id;
-  const { month, year } = req.query; // Mês e Ano da query string
+  const { month, year, clientId } = req.query; // Mês, Ano e Cliente da query string
+
+  console.log(`[Monthly Summary] Received: month=${month}, year=${year}, clientId=${clientId}`);
 
   // Validação de acesso
   if (requestingUserRole === 'common' && targetUserId !== requestingUserId.toString()) {
@@ -171,21 +173,31 @@ exports.getMonthlyTimeSummary = async (req, res) => {
   }
 
   try {
-    const { rows } = await pool.query(
-      `SELECT
-          c.name AS clientName,
+    let query = `
+      SELECT
           t.name AS taskName,
-          SUM(te.duration) AS totalDuration
+          SUM(COALESCE(te.duration, 0)) AS totalDuration
        FROM TimeEntries te
-       JOIN Clients c ON te.clientId = c.id
        JOIN Tasks t ON te.taskId = t.id
        WHERE te.userId = $1
          AND EXTRACT(MONTH FROM te.startTime) = $2
          AND EXTRACT(YEAR FROM te.startTime) = $3
-       GROUP BY c.name, t.name
-       ORDER BY c.name, t.name`,
-      [targetUserId, parseInt(month), parseInt(year)]
-    );
+    `;
+    const queryParams = [targetUserId, parseInt(month), parseInt(year)];
+    let paramIndex = 4;
+
+    if (clientId) {
+      query += ` AND te.clientId = ${paramIndex}`;
+      queryParams.push(clientId);
+      paramIndex++;
+    }
+
+    query += ` GROUP BY t.name ORDER BY t.name`;
+
+    console.log(`[Monthly Summary] Executing query: ${query}`);
+    console.log(`[Monthly Summary] Query params: ${JSON.stringify(queryParams)}`);
+    const { rows } = await pool.query(query, queryParams);
+    console.log(`[Monthly Summary] Query result rows: ${JSON.stringify(rows)}`);
 
     res.json(rows);
   } catch (err) {
@@ -200,7 +212,9 @@ exports.getWeeklyTimeSummary = async (req, res) => {
   const targetUserId = req.params.userId;
   const requestingUserRole = req.user.role;
   const requestingUserId = req.user.id;
-  const { week, year } = req.query; // Semana e Ano da query string
+  const { week, year, clientId } = req.query; // Semana, Ano e Cliente da query string
+
+  console.log(`[Weekly Summary] Received: week=${week}, year=${year}, clientId=${clientId}`);
 
   // Validação de acesso
   if (requestingUserRole === 'common' && targetUserId !== requestingUserId.toString()) {
@@ -213,21 +227,31 @@ exports.getWeeklyTimeSummary = async (req, res) => {
   }
 
   try {
-    const { rows } = await pool.query(
-      `SELECT
-          c.name AS clientName,
+    let query = `
+      SELECT
           t.name AS taskName,
-          SUM(te.duration) AS totalDuration
+          SUM(COALESCE(te.duration, 0)) AS totalDuration
        FROM TimeEntries te
-       JOIN Clients c ON te.clientId = c.id
        JOIN Tasks t ON te.taskId = t.id
        WHERE te.userId = $1
          AND EXTRACT(WEEK FROM te.startTime) = $2
          AND EXTRACT(YEAR FROM te.startTime) = $3
-       GROUP BY c.name, t.name
-       ORDER BY c.name, t.name`,
-      [targetUserId, parseInt(week), parseInt(year)]
-    );
+    `;
+    const queryParams = [targetUserId, parseInt(week), parseInt(year)];
+    let paramIndex = 4;
+
+    if (clientId) {
+      query += ` AND te.clientId = ${paramIndex}`;
+      queryParams.push(clientId);
+      paramIndex++;
+    }
+
+    query += ` GROUP BY t.name ORDER BY t.name`;
+
+    console.log(`[Weekly Summary] Executing query: ${query}`);
+    console.log(`[Weekly Summary] Query params: ${JSON.stringify(queryParams)}`);
+    const { rows } = await pool.query(query, queryParams);
+    console.log(`[Weekly Summary] Query result rows: ${JSON.stringify(rows)}`);
 
     res.json(rows);
   } catch (err) {

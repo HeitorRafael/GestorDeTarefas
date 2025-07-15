@@ -143,10 +143,7 @@ function AdminManagementScreen() {
       {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
       {successMessage && <Alert severity="success" sx={{ mb: 2 }}>{successMessage}</Alert>}
 
-      {/* Seção de Gerenciamento de Usuários */}
-      <Typography variant="h5" gutterBottom sx={{ mt: 4 }}>
-        Gerenciamento de Usuários
-      </Typography>
+      
       <Paper elevation={3} sx={{ p: 3, mb: 4 }}>
         <Typography variant="h6" gutterBottom>
           Criar Novo Usuário

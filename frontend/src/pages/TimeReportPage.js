@@ -40,6 +40,9 @@ function TimeReportPage() {
   const [timeSummary, setTimeSummary] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedClient, setSelectedClient] = useState(''); // New state for selected client
+  const [clients, setClients] = useState([]); // New state for clients list
+  const [allTasks, setAllTasks] = useState([]); // New state for all tasks list
   // Removed selectedDate as it's no longer directly used for monthly/weekly selection
   const [view, setView] = useState('monthly');
 
@@ -50,6 +53,38 @@ function TimeReportPage() {
   // States for weekly view
   const [selectedWeek, setSelectedWeek] = useState(getWeek(new Date(), { weekStartsOn: 1 }));
   const [selectedYearForWeek, setSelectedYearForWeek] = useState(getYear(new Date()));
+
+  const fetchClients = useCallback(async () => {
+    if (!token) return;
+    try {
+      const config = {
+        headers: {
+          'x-auth-token': token,
+        },
+      };
+      const res = await axios.get(`${API_BASE_URL}/clients/admin/`, config);
+      setClients(res.data);
+    } catch (err) {
+      console.error('Erro ao buscar clientes:', err.response ? err.response.data.msg : err.message);
+      setError('Erro ao carregar clientes. Por favor, tente novamente.');
+    }
+  }, [token]);
+
+  const fetchAllTasks = useCallback(async () => {
+    if (!token) return;
+    try {
+      const config = {
+        headers: {
+          'x-auth-token': token,
+        },
+      };
+      const res = await axios.get(`${API_BASE_URL}/tasks/`, config);
+      setAllTasks(res.data);
+    } catch (err) {
+      console.error('Erro ao buscar todas as tarefas:', err.response ? err.response.data.msg : err.message);
+      setError('Erro ao carregar tarefas. Por favor, tente novamente.');
+    }
+  }, [token]);
 
   const handleViewChange = (event, newView) => {
     if (newView !== null) {
@@ -86,29 +121,34 @@ function TimeReportPage() {
         config.params = {
           month: selectedMonth,
           year: selectedYearForMonth,
+          clientId: selectedClient, // Add selected client to params
         };
         endpoint = `${API_BASE_URL}/time-entries/user/${user.id}/monthly-summary`;
       } else if (view === 'weekly') {
         config.params = {
           week: selectedWeek,
           year: selectedYearForWeek,
+          clientId: selectedClient, // Add selected client to params
         };
         endpoint = `${API_BASE_URL}/time-entries/user/${user.id}/weekly-summary`;
       }
 
       const res = await axios.get(endpoint, config);
       setTimeSummary(res.data);
+      console.log('[TimeReportPage] timeSummary received:', res.data);
       setLoading(false);
     } catch (err) {
       console.error(`Erro ao buscar resumo ${view === 'monthly' ? 'mensal' : 'semanal'}:`, err.response ? err.response.data.msg : err.message);
       setError(`Erro ao carregar resumo ${view === 'monthly' ? 'mensal' : 'semanal'}. Por favor, tente novamente.`);
       setLoading(false);
     }
-  }, [token, user, view, selectedMonth, selectedYearForMonth, selectedWeek, selectedYearForWeek]); // Updated dependencies
+  }, [token, user, view, selectedMonth, selectedYearForMonth, selectedWeek, selectedYearForWeek, selectedClient]); // Updated dependencies
 
   useEffect(() => {
+    fetchAllTasks();
+    fetchClients();
     fetchTimeSummary();
-  }, [fetchTimeSummary]);
+  }, [fetchAllTasks, fetchClients, fetchTimeSummary]);
 
   // Generate years for the Select component
   const currentYear = getYear(new Date());
@@ -116,6 +156,9 @@ function TimeReportPage() {
 
   // Months for the Select component
   const months = Array.from({ length: 12 }, (_, i) => i + 1);
+
+  console.log('[TimeReportPage] allTasks at render:', JSON.stringify(allTasks));
+  console.log('[TimeReportPage] timeSummary at render:', timeSummary);
 
   return (
     <Box sx={{ mt: 4 }}>
@@ -170,6 +213,22 @@ function TimeReportPage() {
               ))}
             </Select>
           </FormControl>
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel id="client-select-label">Cliente</InputLabel>
+            <Select
+              labelId="client-select-label"
+              value={selectedClient}
+              label="Cliente"
+              onChange={(e) => setSelectedClient(e.target.value)}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              {clients.map((client) => (
+                <MenuItem key={client.id} value={client.id}>
+                  {client.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
       ) : (
         <Box sx={{ display: 'flex', gap: 2, mb: 3 }}>
@@ -203,6 +262,22 @@ function TimeReportPage() {
               ))}
             </Select>
           </FormControl>
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel id="client-select-label">Cliente</InputLabel>
+            <Select
+              labelId="client-select-label"
+              value={selectedClient}
+              label="Cliente"
+              onChange={(e) => setSelectedClient(e.target.value)}
+            >
+              <MenuItem value="">Todos</MenuItem>
+              {clients.map((client) => (
+                <MenuItem key={client.id} value={client.id}>
+                  {client.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Box>
       )}
 
@@ -214,25 +289,39 @@ function TimeReportPage() {
       ) : error ? (
         <Alert severity="error">{error}</Alert>
       ) : timeSummary.length === 0 ? (
-        <Alert severity="info">Nenhum dado encontrado para o período selecionado.</Alert>
+        <Alert severity="info">Nenhuma tarefa encontrada.</Alert>
       ) : (
+        
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} aria-label="resumo de tempo">
             <TableHead>
               <TableRow>
-                <TableCell>Cliente</TableCell>
                 <TableCell>Tarefa</TableCell>
                 <TableCell align="right">Duração Total</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {timeSummary.map((row, index) => (
-                <TableRow key={index}>
-                  <TableCell>{row.clientName}</TableCell>
-                  <TableCell>{row.taskName}</TableCell>
-                  <TableCell align="right">{formatDuration(row.totalDuration)}</TableCell>
-                </TableRow>
-              ))}
+              {allTasks.map((task) => {
+                console.log(`[TimeReportPage] Searching for task: ${task.name}`);
+                const summaryRow = timeSummary.find(row => {
+                  if (!row || typeof row.taskname !== 'string') {
+                    console.log(`[TimeReportPage] Invalid row or taskName: ${JSON.stringify(row)}`);
+                    return false;
+                  }
+                  const normalizedRowTaskName = row.taskname.toLowerCase().trim();
+                  const normalizedTaskName = task.name.toLowerCase().trim();
+                  console.log(`[TimeReportPage] Comparing: '${normalizedRowTaskName}' with '${normalizedTaskName}'`);
+                  return normalizedRowTaskName === normalizedTaskName;
+                });
+                const totalDuration = summaryRow ? parseInt(summaryRow.totalDuration, 10) : 0;
+                console.log(`[TimeReportPage] Task: ${task.name}, Summary Row: ${JSON.stringify(summaryRow)}, Total Duration (parsed): ${totalDuration}`);
+                return (
+                  <TableRow key={task.id}>
+                    <TableCell>{task.name}</TableCell>
+                    <TableCell align="right">{formatDuration(totalDuration)}</TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </TableContainer>

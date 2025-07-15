@@ -34,7 +34,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 // import LightModeIcon from '@mui/icons-material/LightMode'; // Pode remover, não está sendo usado diretamente no JSX
 // import DarkModeIcon from '@mui/icons-material/DarkMode'; // Pode remover, não está sendo usado diretamente no JSX
 
-const drawerWidth = 240;
+const drawerWidth = 280;
 
 function MainLayout() {
   const { logout, isAdmin } = useAuth();
