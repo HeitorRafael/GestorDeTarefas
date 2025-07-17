@@ -7,11 +7,14 @@ import {
   Paper,
   CircularProgress,
   Alert,
+  Chip,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
-import PauseIcon from '@mui/icons-material/Pause';
 import StopIcon from '@mui/icons-material/Stop';
 import CancelIcon from '@mui/icons-material/Cancel';
+import TimerIcon from '@mui/icons-material/Timer';
+import BusinessIcon from '@mui/icons-material/Business';
+import TaskIcon from '@mui/icons-material/Task';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -31,22 +34,54 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
     if (!token || !user) return;
     try {
       const config = { headers: { 'x-auth-token': token } };
-      // Uma rota hipotética para pegar a tarefa ativa
-      const res = await axios.get(`${API_BASE_URL}/time-entries/user/${user.id}`, config);
-      const runningEntry = res.data.find(entry => entry.endTime === null);
+      // Nova rota específica para buscar tarefa ativa
+      const res = await axios.get(`${API_BASE_URL}/time-entries/active`, config);
+      const runningEntry = res.data;
 
       if (runningEntry) {
         setActiveEntry(runningEntry);
         setIsRunning(true);
         // Calcula o tempo decorrido desde o início
-        const startTime = new Date(runningEntry.startTime);
+        const startTime = new Date(runningEntry.starttime);
         const now = new Date();
         const elapsedSeconds = Math.floor((now - startTime) / 1000);
         setTime(elapsedSeconds);
+        
+        // Persistir no localStorage para manter entre navegações
+        localStorage.setItem('activeTimeEntry', JSON.stringify({
+          id: runningEntry.id,
+          startTime: runningEntry.starttime,
+          taskName: runningEntry.task_name,
+          clientName: runningEntry.client_name,
+          taskId: runningEntry.taskid,
+          clientId: runningEntry.clientid
+        }));
       }
     } catch (err) {
-      // Não é um erro crítico se não encontrar nada
-      console.log("Nenhuma tarefa ativa encontrada ao carregar.");
+      // Se não encontrar tarefa ativa no backend, verifica localStorage
+      const savedEntry = localStorage.getItem('activeTimeEntry');
+      if (savedEntry) {
+        try {
+          const parsedEntry = JSON.parse(savedEntry);
+          // Verifica se a entrada salva ainda é válida (menos de 24h)
+          const startTime = new Date(parsedEntry.startTime);
+          const now = new Date();
+          const hoursDiff = (now - startTime) / (1000 * 60 * 60);
+          
+          if (hoursDiff < 24) {
+            setActiveEntry(parsedEntry);
+            setIsRunning(true);
+            const elapsedSeconds = Math.floor((now - startTime) / 1000);
+            setTime(elapsedSeconds);
+          } else {
+            // Remove entrada antiga
+            localStorage.removeItem('activeTimeEntry');
+          }
+        } catch (parseErr) {
+          localStorage.removeItem('activeTimeEntry');
+        }
+      }
+      console.log("Nenhuma tarefa ativa encontrada.");
     } finally {
       setIsLoading(false);
     }
@@ -89,8 +124,19 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
         { clientId: selectedClient.id, taskId: selectedTask.id },
         config
       );
-      setActiveEntry(res.data.entry);
+      const newEntry = res.data.entry;
+      setActiveEntry(newEntry);
       setTime(0); // Começa do zero no start
+      
+      // Persistir no localStorage
+      localStorage.setItem('activeTimeEntry', JSON.stringify({
+        id: newEntry.id,
+        startTime: newEntry.starttime,
+        taskName: selectedTask.name,
+        clientName: selectedClient.name,
+        taskId: selectedTask.id,
+        clientId: selectedClient.id
+      }));
     } catch (err) {
       setError(`Falha ao iniciar: ${err.response?.data?.msg || err.message}`);
       setIsRunning(false);
@@ -103,6 +149,9 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       const config = { headers: { 'x-auth-token': token } };
       await axios.put(`${API_BASE_URL}/time-entries/end/${activeEntry.id}`, {}, config);
       
+      // Limpar localStorage
+      localStorage.removeItem('activeTimeEntry');
+      
       if (onTimeEntrySaved) {
         onTimeEntrySaved();
       }
@@ -110,6 +159,7 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       setTime(0);
     } catch (err) {
       setError(`Falha ao finalizar: ${err.response?.data?.msg || err.message}`);
+      setIsRunning(true); // Reativa se houver erro
     }
   };
 
@@ -121,6 +171,9 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
     try {
         const config = { headers: { 'x-auth-token': token } };
         await axios.delete(`${API_BASE_URL}/time-entries/active`, config);
+        
+        // Limpar localStorage
+        localStorage.removeItem('activeTimeEntry');
         
         setIsRunning(false);
         setActiveEntry(null);
@@ -170,8 +223,32 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
   return (
     <Paper elevation={3} sx={{ p: 4, textAlign: 'center' }}>
       <Typography variant="h3" sx={{ mb: 2, color: 'primary.main', fontWeight: 'bold' }}>
+        <TimerIcon sx={{ fontSize: 'inherit', mr: 1 }} />
         {formatTime(time)}
       </Typography>
+
+      {/* Mostrar informações da tarefa ativa */}
+      {activeEntry && (
+        <Box sx={{ mb: 3, p: 2, bgcolor: 'background.default', borderRadius: 2 }}>
+          <Typography variant="h6" sx={{ mb: 1, color: 'text.primary' }}>
+            Tarefa em Andamento:
+          </Typography>
+          <Box sx={{ display: 'flex', justifyContent: 'center', gap: 1, flexWrap: 'wrap' }}>
+            <Chip 
+              icon={<BusinessIcon />} 
+              label={activeEntry.client_name || activeEntry.clientName}
+              color="primary" 
+              variant="outlined"
+            />
+            <Chip 
+              icon={<TaskIcon />} 
+              label={activeEntry.task_name || activeEntry.taskName}
+              color="secondary" 
+              variant="outlined"
+            />
+          </Box>
+        </Box>
+      )}
 
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>

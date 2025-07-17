@@ -1,0 +1,36 @@
+{
+  "name": "maximundi",
+  "version": "1.0.0",
+  "description": "Sistema profissional para gestão de tempo corporativo",
+  "main": "index.js",
+  "scripts": {
+    "install:all": "cd backend && npm install && cd ../frontend && npm install",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "dev": "echo 'Execute: npm run start:backend (terminal 1) e npm run start:frontend (terminal 2)'",
+    "setup": "npm run install:all && echo 'Setup concluído! Execute: npm run start:backend e npm run start:frontend em terminais separados'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/seu-usuario/maximundi.git"
+  },
+  "keywords": [
+    "time-management",
+    "productivity",
+    "react",
+    "nodejs",
+    "postgresql",
+    "material-ui",
+    "enterprise"
+  ],
+  "author": "MaxiMundi Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/seu-usuario/maximundi/issues"
+  },
+  "homepage": "https://github.com/seu-usuario/maximundi#readme",
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}

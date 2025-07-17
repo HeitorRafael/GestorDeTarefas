@@ -259,3 +259,33 @@ exports.getWeeklyTimeSummary = async (req, res) => {
     res.status(500).send('Erro no servidor ao obter resumo semanal de tempo.');
   }
 };
+
+// Buscar tarefa ativa do usuário
+exports.getActiveEntry = async (req, res) => {
+  const pool = getPool();
+  const userId = req.user.id;
+
+  try {
+    const activeEntry = await pool.query(`
+      SELECT 
+        te.*,
+        t.name as task_name,
+        c.name as client_name
+      FROM TimeEntries te
+      JOIN Tasks t ON te.taskId = t.id
+      JOIN Clients c ON te.clientId = c.id
+      WHERE te.userId = $1 AND te.endTime IS NULL
+      ORDER BY te.startTime DESC
+      LIMIT 1
+    `, [userId]);
+
+    if (activeEntry.rows.length === 0) {
+      return res.status(404).json({ msg: 'Nenhuma tarefa ativa encontrada.' });
+    }
+
+    res.json(activeEntry.rows[0]);
+  } catch (err) {
+    console.error('Erro ao buscar tarefa ativa:', err.message);
+    res.status(500).send('Erro no servidor ao buscar tarefa ativa.');
+  }
+};
