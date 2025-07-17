@@ -115,7 +115,7 @@ function TimeReportPage() {
         params: {}, // Initialize params
       };
 
-      let endpoint = '';
+      let endpoint = `${API_BASE_URL}/reports/summary`;
 
       if (view === 'monthly') {
         config.params = {
@@ -123,15 +123,14 @@ function TimeReportPage() {
           year: selectedYearForMonth,
           clientId: selectedClient, // Add selected client to params
         };
-        endpoint = `${API_BASE_URL}/time-entries/user/${user.id}/monthly-summary`;
       } else if (view === 'weekly') {
         config.params = {
           week: selectedWeek,
           year: selectedYearForWeek,
           clientId: selectedClient, // Add selected client to params
         };
-        endpoint = `${API_BASE_URL}/time-entries/user/${user.id}/weekly-summary`;
       }
+      
 
       const res = await axios.get(endpoint, config);
       setTimeSummary(res.data);

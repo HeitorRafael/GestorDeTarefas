@@ -4,6 +4,11 @@ const router = express.Router();
 const reportController = require('../controllers/reportController');
 const authMiddleware = require('../middleware/auth'); // Necessário para todas as rotas de relatório
 
+// @route   GET /api/reports/summary
+// @desc    Relatório de resumo de tempo com base nos filtros
+// @access  Private (Usuário Comum/Admin)
+router.get('/summary', authMiddleware, reportController.getTimeSummaryReport);
+
 // @route   GET /api/reports/daily/:userId?
 // @desc    Tempo gasto por tarefa no dia (para um usuário ou todos se admin)
 // @access  Private (Usuário Comum/Admin)

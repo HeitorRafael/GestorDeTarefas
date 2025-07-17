@@ -42,6 +42,59 @@ const formatDuration = (seconds) => {
     .join(':');
 };
 
+exports.getTimeSummaryReport = async (req, res) => {
+  const pool = getPool();
+  const { month, year, clientId, week } = req.query;
+  const userId = req.user.id;
+
+  try {
+    let query = `
+      SELECT
+          t.name AS taskName,
+          COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS totalDuration
+      FROM TimeEntries te
+      JOIN Tasks t ON te.taskId = t.id
+      WHERE te.userId = $1
+    `;
+
+    const queryParams = [userId];
+
+    if (month && year) {
+      query += ` AND EXTRACT(MONTH FROM te.startTime) = ${queryParams.length + 1}`;
+      queryParams.push(month);
+      query += ` AND EXTRACT(YEAR FROM te.startTime) = ${queryParams.length + 1}`;
+      queryParams.push(year);
+    } else if (week && year) {
+      query += ` AND EXTRACT(WEEK FROM te.startTime) = ${queryParams.length + 1}`;
+      queryParams.push(week);
+      query += ` AND EXTRACT(YEAR FROM te.startTime) = ${queryParams.length + 1}`;
+      queryParams.push(year);
+    }
+
+    if (clientId) {
+      query += ` AND te.clientId = ${queryParams.length + 1}`;
+      queryParams.push(clientId);
+    }
+
+    query += `
+      GROUP BY t.name
+      ORDER BY totalDuration DESC;
+    `;
+
+    const { rows } = await pool.query(query, queryParams);
+
+    const formattedRows = rows.map(row => ({
+      taskname: row.taskname,
+      totalDuration: row.totalduration
+    }));
+
+    res.json(formattedRows);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao gerar relatório de resumo de tempo.');
+  }
+};
+
 
 // 1. Tempo gasto por tarefa no dia
 exports.getDailyTaskReport = async (req, res) => {
