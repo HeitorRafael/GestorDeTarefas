@@ -68,11 +68,11 @@ export function AuthProvider({ children }) {
       const decodedPayload = JSON.parse(atob(payloadBase64));
       setUser(decodedPayload.user);
 
-      // Redireciona para o dashboard ou rota apropriada
+      // Redireciona para a rota apropriada
       if (decodedPayload.user.role === 'admin') {
-        navigate('/time-tracking');
-      } else {
         navigate('/dashboard');
+      } else {
+        navigate('/time-tracking');
       }
       return true; // Sucesso
     } catch (err) {

@@ -61,15 +61,6 @@ function AboutPage() {
     'Responsive Design', 'Agile Development'
   ];
 
-  const projects = [
-    {
-      title: 'MaxiMundi - Sistema de Controle de Tempo',
-      description: 'Sistema completo para controle e relatório de tempo com dashboard interativo, filtros avançados e interface responsiva.',
-      technologies: ['React', 'Node.js', 'PostgreSQL', 'Material-UI'],
-      features: ['Dashboard com filtros', 'Relatórios em tempo real', 'Controle de usuários', 'Tema escuro/claro']
-    }
-  ];
-
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box
@@ -185,7 +176,6 @@ function AboutPage() {
             sx={{
               p: 4,
               borderRadius: 4,
-              mb: 4,
               background: theme.palette.mode === 'dark' 
                 ? `linear-gradient(145deg, ${theme.palette.grey[800]} 0%, ${theme.palette.grey[900]} 100%)`
                 : `linear-gradient(145deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
@@ -259,8 +249,10 @@ function AboutPage() {
               ))}
             </Grid>
           </Paper>
+        </Grid>
 
-          {/* Seção de Habilidades */}
+        {/* Seção de Habilidades Centralizada */}
+        <Grid item xs={12}>
           <Paper
             elevation={8}
             sx={{
@@ -271,21 +263,33 @@ function AboutPage() {
                 : `linear-gradient(145deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
               border: `1px solid ${theme.palette.divider}`,
               opacity: 0,
-              animation: 'slideInRight 0.5s ease 0.4s forwards'
+              animation: 'slideInUp 0.5s ease 0.4s forwards',
+              '@keyframes slideInUp': {
+                from: { opacity: 0, transform: 'translateY(20px)' },
+                to: { opacity: 1, transform: 'translateY(0)' }
+              }
             }}
           >
             <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ 
               display: 'flex', 
               alignItems: 'center', 
+              justifyContent: 'center',
               gap: 1,
-              color: 'secondary.main'
+              color: 'secondary.main',
+              textAlign: 'center'
             }}>
               🚀 Tecnologias & Habilidades
             </Typography>
             
             <Divider sx={{ mb: 3 }} />
             
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <Box sx={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: 1,
+              justifyContent: 'center',
+              alignItems: 'center'
+            }}>
               {skills.map((skill, index) => (
                 <Chip
                   key={skill}
@@ -310,84 +314,21 @@ function AboutPage() {
                 />
               ))}
             </Box>
+            
+            <Divider sx={{ my: 3 }} />
+            
+            <Box sx={{ textAlign: 'center' }}>
+              <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
+                💡 MaxiMundi - Demonstração de Competências
+              </Typography>
+              <Typography variant="body1" color="text.secondary">
+                O sistema MaxiMundi que você está utilizando é uma demonstração das minhas habilidades em desenvolvimento full-stack. 
+                Cada funcionalidade foi cuidadosamente projetada para oferecer a melhor experiência do usuário.
+              </Typography>
+            </Box>
           </Paper>
         </Grid>
 
-        {/* Seção de Projetos */}
-        <Grid item xs={12}>
-          <Card
-            elevation={8}
-            sx={{
-              borderRadius: 4,
-              background: theme.palette.mode === 'dark' 
-                ? `linear-gradient(145deg, ${theme.palette.grey[800]} 0%, ${theme.palette.grey[900]} 100%)`
-                : `linear-gradient(145deg, ${theme.palette.grey[50]} 0%, ${theme.palette.grey[100]} 100%)`,
-              border: `1px solid ${theme.palette.divider}`,
-              overflow: 'hidden',
-              opacity: 0,
-              animation: 'fadeInUp 0.5s ease 0.6s forwards'
-            }}
-          >
-            <CardContent sx={{ p: 4 }}>
-              <Typography variant="h5" fontWeight="bold" gutterBottom sx={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: 1,
-                color: 'primary.main'
-              }}>
-                🎯 Projeto em Destaque
-              </Typography>
-              
-              <Divider sx={{ mb: 3 }} />
-              
-              {projects.map((project, index) => (
-                <Box key={index}>
-                  <Typography variant="h6" fontWeight="bold" gutterBottom color="text.primary">
-                    {project.title}
-                  </Typography>
-                  
-                  <Typography variant="body1" paragraph color="text.secondary">
-                    {project.description}
-                  </Typography>
-                  
-                  <Box sx={{ mb: 2 }}>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Tecnologias:
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {project.technologies.map((tech) => (
-                        <Chip key={tech} label={tech} size="small" color="primary" variant="outlined" />
-                      ))}
-                    </Box>
-                  </Box>
-                  
-                  <Box>
-                    <Typography variant="subtitle2" color="text.secondary" gutterBottom>
-                      Principais funcionalidades:
-                    </Typography>
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {project.features.map((feature) => (
-                        <Chip key={feature} label={feature} size="small" color="secondary" variant="outlined" />
-                      ))}
-                    </Box>
-                  </Box>
-                  
-                  <Divider sx={{ my: 3 }} />
-                  
-                  <Box sx={{ textAlign: 'center' }}>
-                    <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                      💡 Este é apenas o começo!
-                    </Typography>
-                    <Typography variant="body1" color="text.secondary">
-                      O sistema MaxiMundi que você está utilizando é uma demonstração das minhas habilidades em desenvolvimento full-stack. 
-                      Cada funcionalidade foi cuidadosamente projetada para oferecer a melhor experiência do usuário.
-                    </Typography>
-                  </Box>
-                </Box>
-              ))}
-            </CardContent>
-          </Card>
-        </Grid>
       </Grid>
     </Container>
   );

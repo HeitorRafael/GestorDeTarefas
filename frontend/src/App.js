@@ -18,7 +18,6 @@ import { useAuth } from './contexts/AuthContext';
 import { lazy } from 'react';
 
 const AdminDashboard = lazy(() => import('./pages/AdminDashboard'));
-const AdminSettingsScreen = lazy(() => import('./pages/AdminSettingsScreen'));
 const TaskManagementPage = lazy(() => import('./pages/TaskManagementPage'));
 const ClientManagementPage = lazy(() => import('./pages/ClientManagementPage'));
 
@@ -59,7 +58,6 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin-management" element={<AdminManagementScreen />} />
-          <Route path="/admin-settings" element={<AdminSettingsScreen />} />
           <Route path="/task-management" element={<TaskManagementPage />} />
           <Route path="/client-management" element={<ClientManagementPage />} />
         </Route>

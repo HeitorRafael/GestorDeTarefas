@@ -33,6 +33,24 @@ async function initializeDatabase() {
       console.log('Senha do usuário admin padrão atualizada.');
     }
 
+    // Inserir ou atualizar um usuário comum padrão
+    const userSalt = await bcrypt.genSalt(10);
+    const userHashedPassword = await bcrypt.hash('senha123', userSalt); // Senha padrão: senha123
+    const { rows: userRows } = await pool.query("SELECT * FROM Users WHERE username = 'user1'");
+    if (userRows.length === 0) {
+      await pool.query(
+        "INSERT INTO Users (username, password, role) VALUES ($1, $2, 'common')",
+        ['user1', userHashedPassword]
+      );
+      console.log('Usuário comum padrão inserido.');
+    } else {
+      await pool.query(
+        "UPDATE Users SET password = $1 WHERE username = 'user1'",
+        [userHashedPassword]
+      );
+      console.log('Senha do usuário comum padrão atualizada.');
+    }
+
     // 2. Criar Tabela Tasks
     await pool.query(`
       CREATE TABLE IF NOT EXISTS Tasks (

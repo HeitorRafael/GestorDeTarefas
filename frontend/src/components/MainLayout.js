@@ -20,7 +20,6 @@ import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import TimerIcon from '@mui/icons-material/Timer';
 import BarChartIcon from '@mui/icons-material/BarChart';
-import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import GroupIcon from '@mui/icons-material/Group';
@@ -211,17 +210,6 @@ function MainLayout() {
                   <ListItemText primary="📞 Contato" sx={{ opacity: open ? 1 : 0 }} />
                 </ListItemButton>
               </ListItem>
-              
-              {isAdmin && (
-                <ListItem disablePadding sx={{ display: 'block' }}>
-                  <ListItemButton component={Link} to="/admin-settings" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
-                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                      <SettingsIcon />
-                    </ListItemIcon>
-                    <ListItemText primary="⚙️ Configurações Admin" sx={{ opacity: open ? 1 : 0 }} />
-                  </ListItemButton>
-                </ListItem>
-              )}
             </List>
           </Box>
         </Box>
