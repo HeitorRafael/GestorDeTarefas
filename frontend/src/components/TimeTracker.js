@@ -8,6 +8,11 @@ import {
   CircularProgress,
   Alert,
   Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  TextField,
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import StopIcon from '@mui/icons-material/Stop';
@@ -15,6 +20,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import TimerIcon from '@mui/icons-material/Timer';
 import BusinessIcon from '@mui/icons-material/Business';
 import TaskIcon from '@mui/icons-material/Task';
+import NoteAddIcon from '@mui/icons-material/NoteAdd';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -28,6 +34,11 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
   const [isLoading, setIsLoading] = useState(true); // <<< Para o carregamento inicial
   const [error, setError] = useState(null);
   const timerRef = useRef(null);
+  
+  // Estados para modal de anotações
+  const [notesModalOpen, setNotesModalOpen] = useState(false);
+  const [notes, setNotes] = useState('');
+  const [pendingTaskData, setPendingTaskData] = useState(null);
 
   // Função para buscar uma tarefa ativa no backend
   const fetchActiveEntry = useCallback(async () => {
@@ -144,10 +155,51 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
   };
 
   const handleEnd = async () => {
+    if (!activeEntry) return;
+
+    // Verificar se é "Casos complexos" (obrigatório ter nota)
+    const taskName = activeEntry.task_name || activeEntry.taskName;
+    const isComplexCase = taskName === 'Casos complexos';
+    
+    // Preparar dados da tarefa para o modal
+    setPendingTaskData({
+      entryId: activeEntry.id,
+      taskName: taskName,
+      clientName: activeEntry.client_name || activeEntry.clientName,
+      isComplexCase
+    });
+    
+    setNotes('');
+    setNotesModalOpen(true);
+  };
+
+  const handleConfirmEnd = async () => {
+    const isComplexCase = pendingTaskData?.isComplexCase;
+    
+    // Validar nota obrigatória para casos complexos
+    if (isComplexCase && (!notes || notes.trim() === '')) {
+      setError('Anotação é obrigatória para "Casos complexos".');
+      return;
+    }
+
+    setError(null);
     setIsRunning(false); // Para o contador
+    setNotesModalOpen(false);
+
     try {
       const config = { headers: { 'x-auth-token': token } };
-      await axios.put(`${API_BASE_URL}/time-entries/end/${activeEntry.id}`, {}, config);
+      
+      // Finalizar a tarefa
+      await axios.put(`${API_BASE_URL}/time-entries/end/${pendingTaskData.entryId}`, {}, config);
+      
+      // Se há anotação, atualizar a entrada com a nota
+      if (notes.trim()) {
+        await axios.put(
+          `${API_BASE_URL}/time-entries/${pendingTaskData.entryId}/notes`,
+          { notes: notes.trim() },
+          config
+        );
+      }
       
       // Limpar localStorage
       localStorage.removeItem('activeTimeEntry');
@@ -157,10 +209,41 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       }
       setActiveEntry(null);
       setTime(0);
+      setPendingTaskData(null);
+      setNotes('');
     } catch (err) {
       setError(`Falha ao finalizar: ${err.response?.data?.msg || err.message}`);
       setIsRunning(true); // Reativa se houver erro
     }
+  };
+
+  // Função personalizada para controlar o fechamento do modal
+  const handleModalClose = (event, reason) => {
+    const isComplexCase = pendingTaskData?.isComplexCase;
+    
+    // Para casos complexos sem anotação, bloqueia TODOS os tipos de fechamento
+    if (isComplexCase && (!notes || notes.trim() === '')) {
+      setError('Para "Casos complexos", a anotação é obrigatória. Preencha o campo para continuar.');
+      return;
+    }
+    
+    // Caso contrário, permite fechar
+    handleCancelEnd();
+  };
+
+  const handleCancelEnd = () => {
+    const isComplexCase = pendingTaskData?.isComplexCase;
+    
+    // Se for caso complexo e não tiver anotação, não permite fechar
+    if (isComplexCase && (!notes || notes.trim() === '')) {
+      setError('Para "Casos complexos", a anotação é obrigatória. Preencha o campo para continuar.');
+      return;
+    }
+    
+    setNotesModalOpen(false);
+    setPendingTaskData(null);
+    setNotes('');
+    setError(null);
   };
 
   const handleCancel = async () => {
@@ -259,6 +342,83 @@ function TimeTracker({ selectedClient, selectedTask, onTimeEntrySaved }) {
       <Box sx={{ display: 'flex', justifyContent: 'center', gap: 2, flexWrap: 'wrap' }}>
         {renderButtons()}
       </Box>
+
+      {/* Modal para anotações */}
+      <Dialog 
+        open={notesModalOpen} 
+        onClose={handleModalClose}
+        maxWidth="sm"
+        fullWidth
+        disableEscapeKeyDown={pendingTaskData?.isComplexCase && (!notes || notes.trim() === '')}
+      >
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <NoteAddIcon />
+          Adicionar Anotação
+          {pendingTaskData?.isComplexCase && (
+            <Chip label="Obrigatório" color="error" size="small" />
+          )}
+        </DialogTitle>
+        <DialogContent>
+          {pendingTaskData && (
+            <Box sx={{ mb: 2 }}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Tarefa: {pendingTaskData.taskName}
+              </Typography>
+              <Typography variant="subtitle2" color="text.secondary">
+                Cliente: {pendingTaskData.clientName}
+              </Typography>
+              {pendingTaskData.isComplexCase && (
+                <Alert severity="warning" sx={{ mt: 1 }}>
+                  <strong>Atenção:</strong> Para casos complexos, a anotação é obrigatória e você não poderá sair sem preenchê-la.
+                </Alert>
+              )}
+            </Box>
+          )}
+          <TextField
+            autoFocus
+            multiline
+            rows={4}
+            variant="outlined"
+            label={pendingTaskData?.isComplexCase ? "Anotações (Obrigatório)" : "Anotações (Opcional)"}
+            placeholder="Descreva o que foi realizado nesta tarefa..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            fullWidth
+            required={pendingTaskData?.isComplexCase}
+            error={pendingTaskData?.isComplexCase && (!notes || notes.trim() === '')}
+            helperText={
+              pendingTaskData?.isComplexCase 
+                ? "Para casos complexos, a anotação é obrigatória"
+                : "Adicione uma anotação sobre o que foi realizado"
+            }
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button 
+            onClick={handleCancelEnd} 
+            color="inherit"
+            disabled={pendingTaskData?.isComplexCase && (!notes || notes.trim() === '')}
+          >
+            {pendingTaskData?.isComplexCase ? 'Cancelar*' : 'Cancelar'}
+          </Button>
+          <Button 
+            onClick={handleConfirmEnd} 
+            color="primary" 
+            variant="contained"
+            startIcon={<StopIcon />}
+            disabled={pendingTaskData?.isComplexCase && (!notes || notes.trim() === '')}
+          >
+            Finalizar Tarefa
+          </Button>
+        </DialogActions>
+        {pendingTaskData?.isComplexCase && (!notes || notes.trim() === '') && (
+          <Box sx={{ px: 3, pb: 2 }}>
+            <Typography variant="caption" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+              * O botão cancelar ficará disponível após preencher a anotação
+            </Typography>
+          </Box>
+        )}
+      </Dialog>
     </Paper>
   );
 }

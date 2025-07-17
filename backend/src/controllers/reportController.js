@@ -345,15 +345,30 @@ exports.getDetailedTimeSummaryReport = async (req, res) => {
 
   // Determinar qual userId usar
   let effectiveUserId;
-  if (requestingUserRole === 'admin' && targetUserId) {
-    effectiveUserId = targetUserId;
+  let includeAllUsers = false;
+  
+  if (requestingUserRole === 'admin') {
+    if (targetUserId && targetUserId !== '') {
+      // Admin solicitou usuário específico
+      effectiveUserId = targetUserId;
+    } else {
+      // Admin sem usuário específico = todos os usuários
+      includeAllUsers = true;
+    }
   } else {
+    // Usuário comum sempre vê apenas seus próprios dados
     effectiveUserId = requestingUserId;
   }
 
   try {
-    const queryParams = [effectiveUserId];
-    const whereClauses = ["te.userId = $1"];
+    const queryParams = [];
+    const whereClauses = [];
+
+    // Filtro de usuário apenas se não for "todos os usuários"
+    if (!includeAllUsers) {
+      queryParams.push(effectiveUserId);
+      whereClauses.push(`te.userId = $${queryParams.length}`);
+    }
 
     if (month && year) {
       queryParams.push(parseInt(month));
@@ -373,18 +388,25 @@ exports.getDetailedTimeSummaryReport = async (req, res) => {
       whereClauses.push(`te.clientId = $${queryParams.length}`);
     }
 
+    // Construir WHERE clause
+    const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')} AND te.endTime IS NOT NULL` : 'WHERE te.endTime IS NOT NULL';
+
     const query = `
       SELECT
           t.name AS taskname,
           COUNT(te.id) AS entry_count,
-          COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS total_duration,
-          COALESCE(AVG(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS average_duration
+          COALESCE(SUM(EXTRACT(EPOCH FROM (te.endTime - te.startTime))), 0) AS total_duration,
+          COALESCE(AVG(EXTRACT(EPOCH FROM (te.endTime - te.startTime))), 0) AS average_duration
       FROM TimeEntries te
       JOIN Tasks t ON te.taskId = t.id
-      WHERE ${whereClauses.join(' AND ')} AND te.endTime IS NOT NULL
+      ${whereClause}
       GROUP BY t.name
       ORDER BY total_duration DESC;
     `;
+
+    console.log(`Query: ${query}`);
+    console.log(`Params: ${JSON.stringify(queryParams)}`);
+    console.log(`Include All Users: ${includeAllUsers}`);
 
     const { rows } = await pool.query(query, queryParams);
 

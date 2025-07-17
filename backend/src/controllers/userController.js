@@ -37,13 +37,28 @@ exports.deleteUser = async (req, res) => {
   const { id } = req.params; // ID do usuário a ser excluído
 
   try {
+    // Primeiro, verificar quantos time entries serão deletados
+    const { rows: timeEntries } = await pool.query(
+      'SELECT COUNT(*) as count FROM TimeEntries WHERE userId = $1',
+      [id]
+    );
+    
+    // Verificar se o usuário existe
+    const { rows: userCheck } = await pool.query('SELECT username FROM Users WHERE id = $1', [id]);
+    if (userCheck.length === 0) {
+      return res.status(404).json({ msg: 'Usuário não encontrado.' });
+    }
+
     const { rowCount } = await pool.query('DELETE FROM Users WHERE id = $1', [id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ msg: 'Usuário não encontrado.' });
     }
 
-    res.json({ msg: 'Usuário excluído com sucesso.' });
+    const deletedEntriesCount = parseInt(timeEntries[0].count);
+    const message = `Usuário "${userCheck[0].username}" excluído com sucesso.${deletedEntriesCount > 0 ? ` ${deletedEntriesCount} registro(s) de tempo associado(s) também foram removidos.` : ''}`;
+
+    res.json({ msg: message, deletedTimeEntries: deletedEntriesCount });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Erro no servidor ao excluir usuário.');

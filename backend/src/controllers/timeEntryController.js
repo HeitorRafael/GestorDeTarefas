@@ -99,7 +99,8 @@ exports.getUserTimeEntries = async (req, res) => {
           c.name AS clientName,
           te.startTime,
           te.endTime,
-          te.duration
+          te.duration,
+          te.notes
        FROM TimeEntries te
        JOIN Users u ON te.userId = u.id
        JOIN Tasks t ON te.taskId = t.id
@@ -287,5 +288,120 @@ exports.getActiveEntry = async (req, res) => {
   } catch (err) {
     console.error('Erro ao buscar tarefa ativa:', err.message);
     res.status(500).send('Erro no servidor ao buscar tarefa ativa.');
+  }
+};
+
+// Buscar anotações com filtros para dashboard
+exports.getNotesReport = async (req, res) => {
+  const pool = getPool();
+  const { month, year, clientId, week, userId: targetUserId } = req.query;
+  const requestingUserRole = req.user.role;
+  const requestingUserId = req.user.id;
+
+  // Determinar qual userId usar
+  let effectiveUserId;
+  let includeAllUsers = false;
+  
+  if (requestingUserRole === 'admin') {
+    if (targetUserId && targetUserId !== '') {
+      // Admin solicitou usuário específico
+      effectiveUserId = targetUserId;
+    } else {
+      // Admin sem usuário específico = todos os usuários
+      includeAllUsers = true;
+    }
+  } else {
+    // Usuário comum sempre vê apenas seus próprios dados
+    effectiveUserId = requestingUserId;
+  }
+
+  try {
+    const queryParams = [];
+    const whereClauses = [];
+
+    // Filtro de usuário apenas se não for "todos os usuários"
+    if (!includeAllUsers) {
+      queryParams.push(effectiveUserId);
+      whereClauses.push(`te.userId = $${queryParams.length}`);
+    }
+
+    if (month && year) {
+      queryParams.push(parseInt(month));
+      whereClauses.push(`EXTRACT(MONTH FROM te.startTime) = $${queryParams.length}`);
+      queryParams.push(parseInt(year));
+      whereClauses.push(`EXTRACT(YEAR FROM te.startTime) = $${queryParams.length}`);
+    } else if (week && year) {
+      queryParams.push(parseInt(week));
+      whereClauses.push(`EXTRACT(WEEK FROM te.startTime) = $${queryParams.length}`);
+      queryParams.push(parseInt(year));
+      whereClauses.push(`EXTRACT(YEAR FROM te.startTime) = $${queryParams.length}`);
+    }
+
+    // Verificar se clientId é válido (não vazio e não nulo)
+    if (clientId && clientId.trim() !== '') {
+      queryParams.push(parseInt(clientId));
+      whereClauses.push(`te.clientId = $${queryParams.length}`);
+    }
+
+    // Apenas entradas que têm anotações
+    whereClauses.push(`te.notes IS NOT NULL AND te.notes != ''`);
+
+    // Construir WHERE clause
+    const whereClause = whereClauses.length > 0 ? `WHERE ${whereClauses.join(' AND ')}` : '';
+
+    const query = `
+      SELECT
+          te.id,
+          te.notes,
+          te.startTime,
+          te.endTime,
+          te.duration,
+          u.username,
+          t.name AS taskName,
+          c.name AS clientName
+      FROM TimeEntries te
+      JOIN Users u ON te.userId = u.id
+      JOIN Tasks t ON te.taskId = t.id
+      JOIN Clients c ON te.clientId = c.id
+      ${whereClause}
+      ORDER BY te.startTime DESC;
+    `;
+
+    const { rows } = await pool.query(query, queryParams);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('Erro no getNotesReport:', err.message);
+    res.status(500).json({ 
+      msg: 'Erro no servidor ao gerar relatório de anotações.',
+      error: err.message 
+    });
+  }
+};
+
+// Atualizar anotações de uma entrada finalizada
+exports.updateTimeEntryNotes = async (req, res) => {
+  const pool = getPool();
+  const { id } = req.params;
+  const { notes } = req.body;
+  const userId = req.user.id;
+
+  try {
+    const { rowCount, rows } = await pool.query(
+      `UPDATE TimeEntries
+       SET notes = $1
+       WHERE id = $2 AND userId = $3 AND endTime IS NOT NULL
+       RETURNING *`,
+      [notes, id, userId]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ msg: 'Registro de tempo não encontrado ou não finalizado.' });
+    }
+
+    res.json({ msg: 'Anotações atualizadas com sucesso!', entry: rows[0] });
+  } catch (err) {
+    console.error('Erro ao atualizar anotações:', err.message);
+    res.status(500).send('Erro no servidor ao atualizar anotações.');
   }
 };

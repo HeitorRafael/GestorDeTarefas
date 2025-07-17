@@ -19,6 +19,9 @@ exports.addClient = async (req, res) => {
   const { name } = req.body;
 
   try {
+    // Verificar se um cliente com o mesmo nome já existe
+    const { rows } = await pool.query('SELECT * FROM Clients WHERE name = $1', [name]);
+    
     if (rows.length > 0) {
       return res.status(400).json({ msg: 'Cliente com este nome já existe.' });
     }
@@ -40,13 +43,28 @@ exports.deleteClient = async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Primeiro, verificar quantos time entries serão deletados
+    const { rows: timeEntries } = await pool.query(
+      'SELECT COUNT(*) as count FROM TimeEntries WHERE clientId = $1',
+      [id]
+    );
+    
+    // Verificar se o cliente existe
+    const { rows: clientCheck } = await pool.query('SELECT name FROM Clients WHERE id = $1', [id]);
+    if (clientCheck.length === 0) {
+      return res.status(404).json({ msg: 'Cliente não encontrado.' });
+    }
+
     const { rowCount } = await pool.query('DELETE FROM Clients WHERE id = $1', [id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ msg: 'Cliente não encontrado.' });
     }
 
-    res.json({ msg: 'Cliente excluído com sucesso.' });
+    const deletedEntriesCount = parseInt(timeEntries[0].count);
+    const message = `Cliente "${clientCheck[0].name}" excluído com sucesso.${deletedEntriesCount > 0 ? ` ${deletedEntriesCount} registro(s) de tempo associado(s) também foram removidos.` : ''}`;
+
+    res.json({ msg: message, deletedTimeEntries: deletedEntriesCount });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Erro no servidor ao excluir cliente.');

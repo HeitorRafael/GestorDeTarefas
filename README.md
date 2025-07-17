@@ -219,9 +219,15 @@ Contribuições são sempre bem-vindas! Para contribuir:
 
 ## 📞 Suporte
 
-Para suporte técnico ou dúvidas:
-- 📧 Email: suporte@maximundi.com
-- 🌐 Site: [www.maximundi.com](https://www.maximundi.com)
+Para suporte técnico ou dúvidas, entre em contato com o desenvolvedor:
+
+**Heitor Rafael Bezerra Delfino**
+- 📧 Email: [heitorbdelfino@gmail.com](mailto:heitorbdelfino@gmail.com)
+- 📱 Celular: [(13) 99790-2633](tel:+5513997902633)
+- � LinkedIn: [Heitor Rafael Bezerra Delfino](https://www.linkedin.com/in/heitor-rafael-bezerra-delfino-129760187/)
+- 📍 Localização: Praia Grande, SP
+
+> 💡 **Dica**: Acesse a página "Sobre" da aplicação (`/about`) para mais informações sobre o desenvolvedor e suas competências.
 
 ## 📈 Roadmap
 
@@ -235,5 +241,13 @@ Para suporte técnico ou dúvidas:
 ---
 
 <div align="center">
-Desenvolvido com ❤️ para otimizar a gestão de tempo empresarial
+
+**MaxiMundi - Sistema de Controle de Tempo**
+
+Desenvolvido por **Heitor Rafael Bezerra Delfino** ❤️
+
+*Demonstração de competências em desenvolvimento Full-Stack*
+
+[📧 heitorbdelfino@gmail.com](mailto:heitorbdelfino@gmail.com) | [💼 LinkedIn](https://www.linkedin.com/in/heitor-rafael-bezerra-delfino-129760187/) | [📱 (13) 99790-2633](tel:+5513997902633)
+
 </div>

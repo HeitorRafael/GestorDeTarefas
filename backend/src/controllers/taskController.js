@@ -44,13 +44,28 @@ exports.deleteTask = async (req, res) => {
   const { id } = req.params;
 
   try {
+    // Primeiro, verificar quantos time entries serão deletados
+    const { rows: timeEntries } = await pool.query(
+      'SELECT COUNT(*) as count FROM TimeEntries WHERE taskId = $1',
+      [id]
+    );
+    
+    // Verificar se a tarefa existe
+    const { rows: taskCheck } = await pool.query('SELECT name FROM Tasks WHERE id = $1', [id]);
+    if (taskCheck.length === 0) {
+      return res.status(404).json({ msg: 'Tarefa não encontrada.' });
+    }
+
     const { rowCount } = await pool.query('DELETE FROM Tasks WHERE id = $1', [id]);
 
     if (rowCount === 0) {
       return res.status(404).json({ msg: 'Tarefa não encontrada.' });
     }
 
-    res.json({ msg: 'Tarefa excluída com sucesso.' });
+    const deletedEntriesCount = parseInt(timeEntries[0].count);
+    const message = `Tarefa "${taskCheck[0].name}" excluída com sucesso.${deletedEntriesCount > 0 ? ` ${deletedEntriesCount} registro(s) de tempo associado(s) também foram removidos.` : ''}`;
+
+    res.json({ msg: message, deletedTimeEntries: deletedEntriesCount });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Erro no servidor ao excluir tarefa.');

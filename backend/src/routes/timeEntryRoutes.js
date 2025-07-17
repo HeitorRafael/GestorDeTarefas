@@ -39,4 +39,14 @@ router.get('/active', authMiddleware, timeEntryController.getActiveEntry);
 // @access  Private (Usuário Comum)
 router.delete('/active', authMiddleware, timeEntryController.cancelActiveEntry);
 
+// @route   GET /api/time-entries/notes-report
+// @desc    Obter relatório de anotações com filtros
+// @access  Private (Usuário Comum/Admin)
+router.get('/notes-report', authMiddleware, timeEntryController.getNotesReport);
+
+// @route   PUT /api/time-entries/:id/notes
+// @desc    Atualizar anotações de uma entrada finalizada
+// @access  Private (Usuário Comum)
+router.put('/:id/notes', authMiddleware, timeEntryController.updateTimeEntryNotes);
+
 module.exports = router;

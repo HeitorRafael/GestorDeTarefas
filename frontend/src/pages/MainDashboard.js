@@ -22,6 +22,7 @@ import {
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 import { getWeek, getYear, getMonth } from 'date-fns';
+import NotesTable from '../components/NotesTable';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
@@ -124,15 +125,15 @@ function MainDashboard() {
         config.params = {
           month: selectedMonth,
           year: selectedYearForMonth,
-          clientId: selectedClient,
-          ...(isAdmin && selectedUser && { userId: selectedUser }),
+          ...(selectedClient && selectedClient !== '' && { clientId: selectedClient }),
+          ...(isAdmin && selectedUser && selectedUser !== '' && { userId: selectedUser }),
         };
       } else if (view === 'weekly') {
         config.params = {
           week: selectedWeek,
           year: selectedYearForWeek,
-          clientId: selectedClient,
-          ...(isAdmin && selectedUser && { userId: selectedUser }),
+          ...(selectedClient && selectedClient !== '' && { clientId: selectedClient }),
+          ...(isAdmin && selectedUser && selectedUser !== '' && { userId: selectedUser }),
         };
       }
 
@@ -569,6 +570,17 @@ function MainDashboard() {
           </TableContainer>
         </Box>
       )}
+
+      {/* Tabela de Anotações */}
+      <NotesTable
+        view={view}
+        selectedMonth={selectedMonth}
+        selectedYearForMonth={selectedYearForMonth}
+        selectedWeek={selectedWeek}
+        selectedYearForWeek={selectedYearForWeek}
+        selectedClient={selectedClient}
+        selectedUser={selectedUser}
+      />
     </Box>
   );
 }

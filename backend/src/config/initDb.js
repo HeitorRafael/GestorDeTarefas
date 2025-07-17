@@ -109,10 +109,22 @@ await pool.query(`
       startTime TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
       endTime TIMESTAMP WITH TIME ZONE,
       duration INTEGER,
+      notes TEXT,
       CONSTRAINT chk_time_order CHECK (endTime IS NULL OR endTime >= startTime)
   );
 `);
 console.log('Tabela TimeEntries verificada/criada.');
+
+// Adicionar coluna notes se não existir (para bancos existentes)
+try {
+  await pool.query(`
+    ALTER TABLE TimeEntries 
+    ADD COLUMN IF NOT EXISTS notes TEXT;
+  `);
+  console.log('Coluna notes verificada/adicionada à tabela TimeEntries.');
+} catch (err) {
+  console.log('Coluna notes já existe ou erro na adição:', err.message);
+}
 
     console.log('Banco de dados inicializado com sucesso!');
   } catch (err) {
@@ -121,4 +133,77 @@ console.log('Tabela TimeEntries verificada/criada.');
   }
 }
 
-module.exports = initializeDatabase;
+// Função para resetar o banco de dados para estado inicial
+async function resetDatabase() {
+  const pool = getPool();
+  try {
+    console.log('Iniciando reset do banco de dados...');
+    
+    // 1. Remover todos os dados das tabelas (em ordem devido às FK)
+    await pool.query('DELETE FROM TimeEntries');
+    console.log('Todos os registros de tempo removidos.');
+    
+    await pool.query('DELETE FROM Users WHERE username NOT IN (\'admin\', \'user1\')');
+    console.log('Usuários adicionais removidos (admin e user1 mantidos).');
+    
+    await pool.query('DELETE FROM Tasks');
+    console.log('Todas as tarefas removidas.');
+    
+    await pool.query('DELETE FROM Clients');
+    console.log('Todos os clientes removidos.');
+    
+    // 2. Reset dos IDs auto-increment
+    await pool.query('ALTER SEQUENCE timeentries_id_seq RESTART WITH 1');
+    await pool.query('ALTER SEQUENCE tasks_id_seq RESTART WITH 1');
+    await pool.query('ALTER SEQUENCE clients_id_seq RESTART WITH 1');
+    console.log('Sequências de ID resetadas.');
+    
+    // 3. Reinserir dados iniciais
+    // Inserir tarefas iniciais
+    const initialTasks = [
+      'Cadastro cotação', 'Fechamento', 'Envio de cotações aos cliente', 'Casos complexos'
+    ];
+    for (const taskName of initialTasks) {
+      await pool.query('INSERT INTO Tasks (name) VALUES ($1)', [taskName]);
+    }
+    console.log('Tarefas iniciais reinseridas.');
+
+    // Inserir clientes iniciais
+    const initialClients = [
+      'Amazon Polpas', 'Argo Foods', 'Ebram', 'TG Projects', 'PQVIRK', 'Inbra', 'Cedro',
+      'Gpagro', 'FCN Prime', 'Lusitano da Amazonia', 'Pneu Free', 'Empório dos Mármores',
+      'FG Resinas', 'Grupo vita sano', 'Tramontina Belém', 'Biomed', 'Mundo dos Ferros',
+      'OPT', 'UNESP', 'KRG', 'Brasil internacional', 'Duoflex', 'Purcom', 'Valgroup',
+      'Tramontina delta', 'Clean amazonas', 'Raposo Plásticos', 'Amaxxon', 'The controller',
+      'EnVimat', 'Formaggio', 'GR Water', 'Maringá Ferros', 'Alpha comex', 'Lusitano',
+      'Digital conect', 'Qualitronix', 'Adar Indústria', 'Tramontina garibaldi'
+    ];
+    for (const clientName of initialClients) {
+      await pool.query('INSERT INTO Clients (name) VALUES ($1)', [clientName]);
+    }
+    console.log('Clientes iniciais reinseridos.');
+    
+    // 4. Atualizar senhas dos usuários padrão
+    const salt = await bcrypt.genSalt(10);
+    const adminHashedPassword = await bcrypt.hash('admin123', salt);
+    await pool.query("UPDATE Users SET password = $1 WHERE username = 'admin'", [adminHashedPassword]);
+    
+    const userSalt = await bcrypt.genSalt(10);
+    const userHashedPassword = await bcrypt.hash('senha123', userSalt);
+    await pool.query("UPDATE Users SET password = $1 WHERE username = 'user1'", [userHashedPassword]);
+    console.log('Senhas dos usuários padrão atualizadas.');
+    
+    console.log('Reset do banco de dados concluído com sucesso!');
+    console.log('Estado atual: apenas usuários admin/user1, todas as tarefas e clientes iniciais, nenhum registro de tempo.');
+    
+  } catch (err) {
+    console.error('Erro ao resetar o banco de dados:', err);
+    throw err;
+  }
+}
+
+module.exports = { 
+  default: initializeDatabase,
+  initializeDatabase,
+  resetDatabase
+};
