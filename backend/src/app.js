@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const path = require('path');
 const { initializeDatabase } = require('./config/initDb');
+const ipWhitelistMiddleware = require('./middleware/ipWhitelist');
 
 // Importar todas as rotas
 const authRoutes = require('./routes/authRoutes');
