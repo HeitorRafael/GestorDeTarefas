@@ -34,4 +34,9 @@ router.get('/task-demand', authMiddleware, reportController.getTaskDemandReport)
 // @access  Private (Usuário Comum/Admin)
 router.get('/task-by-client', authMiddleware, reportController.getTaskByClientReport); // usa query param ?userId=X
 
+// @route   GET /api/reports/detailed-summary
+// @desc    Relatório detalhado com estatísticas (tempo médio, número de entradas)
+// @access  Private (Usuário Comum/Admin)
+router.get('/detailed-summary', authMiddleware, reportController.getDetailedTimeSummaryReport);
+
 module.exports = router;

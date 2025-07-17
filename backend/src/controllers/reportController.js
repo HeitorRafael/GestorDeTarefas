@@ -44,54 +44,66 @@ const formatDuration = (seconds) => {
 
 exports.getTimeSummaryReport = async (req, res) => {
   const pool = getPool();
-  const { month, year, clientId, week } = req.query;
-  const userId = req.user.id;
+  const { month, year, clientId, week, userId: targetUserId } = req.query;
+  const requestingUserRole = req.user.role;
+  const requestingUserId = req.user.id;
+
+  // Determinar qual userId usar
+  let effectiveUserId;
+  if (requestingUserRole === 'admin' && targetUserId) {
+    effectiveUserId = targetUserId;
+  } else {
+    effectiveUserId = requestingUserId;
+  }
 
   try {
-    let query = `
-      SELECT
-          t.name AS taskName,
-          COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS totalDuration
-      FROM TimeEntries te
-      JOIN Tasks t ON te.taskId = t.id
-      WHERE te.userId = $1
-    `;
-
-    const queryParams = [userId];
+    const queryParams = [effectiveUserId];
+    const whereClauses = ["te.userId = $1"];
 
     if (month && year) {
-      query += ` AND EXTRACT(MONTH FROM te.startTime) = ${queryParams.length + 1}`;
-      queryParams.push(month);
-      query += ` AND EXTRACT(YEAR FROM te.startTime) = ${queryParams.length + 1}`;
-      queryParams.push(year);
+      queryParams.push(parseInt(month));
+      whereClauses.push(`EXTRACT(MONTH FROM te.startTime) = $${queryParams.length}`);
+      queryParams.push(parseInt(year));
+      whereClauses.push(`EXTRACT(YEAR FROM te.startTime) = $${queryParams.length}`);
     } else if (week && year) {
-      query += ` AND EXTRACT(WEEK FROM te.startTime) = ${queryParams.length + 1}`;
-      queryParams.push(week);
-      query += ` AND EXTRACT(YEAR FROM te.startTime) = ${queryParams.length + 1}`;
-      queryParams.push(year);
+      queryParams.push(parseInt(week));
+      whereClauses.push(`EXTRACT(WEEK FROM te.startTime) = $${queryParams.length}`);
+      queryParams.push(parseInt(year));
+      whereClauses.push(`EXTRACT(YEAR FROM te.startTime) = $${queryParams.length}`);
     }
 
-    if (clientId) {
-      query += ` AND te.clientId = ${queryParams.length + 1}`;
-      queryParams.push(clientId);
+    // Verificar se clientId é válido (não vazio e não nulo)
+    if (clientId && clientId.trim() !== '') {
+      queryParams.push(parseInt(clientId));
+      whereClauses.push(`te.clientId = $${queryParams.length}`);
     }
 
-    query += `
+    const query = `
+      SELECT
+          t.name AS taskname,
+          COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS totalduration
+      FROM TimeEntries te
+      JOIN Tasks t ON te.taskId = t.id
+      WHERE ${whereClauses.join(' AND ')}
       GROUP BY t.name
-      ORDER BY totalDuration DESC;
+      ORDER BY SUM(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))) DESC;
     `;
 
     const { rows } = await pool.query(query, queryParams);
 
     const formattedRows = rows.map(row => ({
       taskname: row.taskname,
-      totalDuration: row.totalduration
+      totalDuration: Math.round(parseFloat(row.totalduration)) // Converter para inteiro
     }));
 
     res.json(formattedRows);
   } catch (err) {
-    console.error(err.message);
-    res.status(500).send('Erro no servidor ao gerar relatório de resumo de tempo.');
+    console.error('Erro no getTimeSummaryReport:', err.message);
+    console.error('Stack trace:', err.stack);
+    res.status(500).json({ 
+      msg: 'Erro no servidor ao gerar relatório de resumo de tempo.',
+      error: err.message 
+    });
   }
 };
 
@@ -321,5 +333,74 @@ exports.getTaskByClientReport = async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Erro no servidor ao gerar relatório de tarefa por cliente.');
+  }
+};
+
+// Relatório detalhado com estatísticas (tempo médio, número de entradas)
+exports.getDetailedTimeSummaryReport = async (req, res) => {
+  const pool = getPool();
+  const { month, year, clientId, week, userId: targetUserId } = req.query;
+  const requestingUserRole = req.user.role;
+  const requestingUserId = req.user.id;
+
+  // Determinar qual userId usar
+  let effectiveUserId;
+  if (requestingUserRole === 'admin' && targetUserId) {
+    effectiveUserId = targetUserId;
+  } else {
+    effectiveUserId = requestingUserId;
+  }
+
+  try {
+    const queryParams = [effectiveUserId];
+    const whereClauses = ["te.userId = $1"];
+
+    if (month && year) {
+      queryParams.push(parseInt(month));
+      whereClauses.push(`EXTRACT(MONTH FROM te.startTime) = $${queryParams.length}`);
+      queryParams.push(parseInt(year));
+      whereClauses.push(`EXTRACT(YEAR FROM te.startTime) = $${queryParams.length}`);
+    } else if (week && year) {
+      queryParams.push(parseInt(week));
+      whereClauses.push(`EXTRACT(WEEK FROM te.startTime) = $${queryParams.length}`);
+      queryParams.push(parseInt(year));
+      whereClauses.push(`EXTRACT(YEAR FROM te.startTime) = $${queryParams.length}`);
+    }
+
+    // Verificar se clientId é válido (não vazio e não nulo)
+    if (clientId && clientId.trim() !== '') {
+      queryParams.push(parseInt(clientId));
+      whereClauses.push(`te.clientId = $${queryParams.length}`);
+    }
+
+    const query = `
+      SELECT
+          t.name AS taskname,
+          COUNT(te.id) AS entry_count,
+          COALESCE(SUM(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS total_duration,
+          COALESCE(AVG(EXTRACT(EPOCH FROM (COALESCE(te.endTime, NOW()) - te.startTime))), 0) AS average_duration
+      FROM TimeEntries te
+      JOIN Tasks t ON te.taskId = t.id
+      WHERE ${whereClauses.join(' AND ')} AND te.endTime IS NOT NULL
+      GROUP BY t.name
+      ORDER BY total_duration DESC;
+    `;
+
+    const { rows } = await pool.query(query, queryParams);
+
+    const formattedRows = rows.map(row => ({
+      taskname: row.taskname,
+      totalDuration: Math.round(parseFloat(row.total_duration)),
+      averageDuration: Math.round(parseFloat(row.average_duration)),
+      entryCount: parseInt(row.entry_count)
+    }));
+
+    res.json(formattedRows);
+  } catch (err) {
+    console.error('Erro no getDetailedTimeSummaryReport:', err.message);
+    res.status(500).json({ 
+      msg: 'Erro no servidor ao gerar relatório detalhado de tempo.',
+      error: err.message 
+    });
   }
 };

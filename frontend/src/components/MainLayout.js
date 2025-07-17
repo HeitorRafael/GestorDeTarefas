@@ -18,14 +18,14 @@ import {
 import { useTheme } from '@mui/material/styles'; // <<< ADICIONE ESTA IMPORTAÇÃO
 import MenuIcon from '@mui/icons-material/Menu';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
-import DashboardIcon from '@mui/icons-material/Dashboard';
 import TimerIcon from '@mui/icons-material/Timer';
-import PeopleIcon from '@mui/icons-material/People';
+import BarChartIcon from '@mui/icons-material/BarChart';
 import SettingsIcon from '@mui/icons-material/Settings';
 import LogoutIcon from '@mui/icons-material/Logout';
 import AssignmentIcon from '@mui/icons-material/Assignment';
 import GroupIcon from '@mui/icons-material/Group';
 import BusinessIcon from '@mui/icons-material/Business';
+import ContactPageIcon from '@mui/icons-material/ContactPage';
 import { useAuth } from '../contexts/AuthContext';
 import { Link, Outlet } from 'react-router-dom';
 import { useThemeToggle } from '../contexts/ThemeContext';
@@ -146,68 +146,102 @@ function MainLayout() {
           </IconButton>
         </Box>
         <Divider />
-        <List>
-          {/* Itens de navegação comuns */}
-          <ListItem disablePadding sx={{ display: 'block' }}>
-            <ListItemButton component={Link} to="/dashboard" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
-              <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                <DashboardIcon />
-              </ListItemIcon>
-              <ListItemText primary="Dashboard" sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </ListItem>
+        <Box sx={{ display: 'flex', flexDirection: 'column', height: 'calc(100vh - 120px)' }}>
+          <List>
+            {/* Itens de navegação comuns */}
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton component={Link} to="/dashboard" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                  <BarChartIcon />
+                </ListItemIcon>
+                <ListItemText primary="📊 Relatórios" sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
 
-          <ListItem disablePadding sx={{ display: 'block' }}>
-            <ListItemButton component={Link} to="/time-tracking" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
-              <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                <TimerIcon />
-              </ListItemIcon>
-              <ListItemText primary="Registro de Tempo" sx={{ opacity: open ? 1 : 0 }} />
-            </ListItemButton>
-          </ListItem>
+            <ListItem disablePadding sx={{ display: 'block' }}>
+              <ListItemButton component={Link} to="/time-tracking" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                  <TimerIcon />
+                </ListItemIcon>
+                <ListItemText primary="⏱️ Registro de Tempo" sx={{ opacity: open ? 1 : 0 }} />
+              </ListItemButton>
+            </ListItem>
 
-          {/* Itens de navegação apenas para Admin */}
-          {isAdmin && (
-            <>
-              <Divider />
+            {/* Itens de navegação apenas para Admin */}
+            {isAdmin && (
+              <>
+                <Divider />
+                <ListItem disablePadding sx={{ display: 'block' }}>
+                  <ListItemButton component={Link} to="/admin-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                      <GroupIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="👥 Gerenciar Usuários" sx={{ opacity: open ? 1 : 0 }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding sx={{ display: 'block' }}>
+                  <ListItemButton component={Link} to="/task-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                      <AssignmentIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="📋 Gerenciar Tarefas" sx={{ opacity: open ? 1 : 0 }} />
+                  </ListItemButton>
+                </ListItem>
+                <ListItem disablePadding sx={{ display: 'block' }}>
+                  <ListItemButton component={Link} to="/client-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                      <BusinessIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="🏢 Gerenciar Clientes" sx={{ opacity: open ? 1 : 0 }} />
+                  </ListItemButton>
+                </ListItem>
+              </>
+            )}
+          </List>
+          
+          {/* Seção inferior do menu */}
+          <Box sx={{ mt: 'auto' }}>
+            <Divider />
+            <List>
               <ListItem disablePadding sx={{ display: 'block' }}>
-                <ListItemButton component={Link} to="/admin-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                <ListItemButton component={Link} to="/about" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
                   <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                    <GroupIcon />
+                    <ContactPageIcon />
                   </ListItemIcon>
-                  <ListItemText primary="Gerenciar Usuários" sx={{ opacity: open ? 1 : 0 }} />
+                  <ListItemText primary="📞 Contato" sx={{ opacity: open ? 1 : 0 }} />
                 </ListItemButton>
               </ListItem>
-              <ListItem disablePadding sx={{ display: 'block' }}>
-                <ListItemButton component={Link} to="/task-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
-                  <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                    <AssignmentIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Gerenciamento de Tarefas" sx={{ opacity: open ? 1 : 0 }} />
-                </ListItemButton>
-              </ListItem>
-              <ListItem disablePadding sx={{ display: 'block' }}>
-                <ListItemButton component={Link} to="/client-management" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
-                  <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                    <BusinessIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Gerenciamento de Clientes" sx={{ opacity: open ? 1 : 0 }} />
-                </ListItemButton>
-              </ListItem>
-              <ListItem disablePadding sx={{ display: 'block' }}>
-                <ListItemButton component={Link} to="/admin-settings" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
-                  <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
-                    <SettingsIcon />
-                  </ListItemIcon>
-                  <ListItemText primary="Configurações Admin" sx={{ opacity: open ? 1 : 0 }} />
-                </ListItemButton>
-              </ListItem>
-            </>
-          )}
-        </List>
+              
+              {isAdmin && (
+                <ListItem disablePadding sx={{ display: 'block' }}>
+                  <ListItemButton component={Link} to="/admin-settings" sx={{ minHeight: 48, justifyContent: open ? 'initial' : 'center', px: 2.5 }}>
+                    <ListItemIcon sx={{ minWidth: 0, mr: open ? 3 : 'auto', justifyContent: 'center' }}>
+                      <SettingsIcon />
+                    </ListItemIcon>
+                    <ListItemText primary="⚙️ Configurações Admin" sx={{ opacity: open ? 1 : 0 }} />
+                  </ListItemButton>
+                </ListItem>
+              )}
+            </List>
+          </Box>
+        </Box>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 3, mt: 8 }}>
-        <Outlet />
+      <Box 
+        component="main" 
+        sx={{ 
+          flexGrow: 1, 
+          p: 3, 
+          mt: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          minHeight: 'calc(100vh - 64px)',
+          width: '100%'
+        }}
+      >
+        <Box sx={{ width: '100%', maxWidth: '1400px' }}>
+          <Outlet />
+        </Box>
       </Box>
     </Box>
   );

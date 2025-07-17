@@ -12,7 +12,8 @@ import MainLayout from './components/MainLayout';
 import MainDashboard from './pages/MainDashboard'; // Importe o MainDashboard real
 import UserDashboard from './pages/UserDashboard'; // Importe o UserDashboard real
 import AdminManagementScreen from './pages/AdminManagementScreen'; // Importe o AdminManagementScreen real
-import TimeReportPage from './pages/TimeReportPage'; // Importe a nova página de relatório de tempo
+import TimeTrackingPage from './pages/TimeTrackingPage'; // Nova página para controle de tempo
+import AboutPage from './pages/AboutPage'; // Página de contatos/sobre
 import { useAuth } from './contexts/AuthContext';
 import { lazy } from 'react';
 
@@ -48,8 +49,8 @@ function App() {
         <Route element={<MainLayout />}>
           <Route path="/dashboard" element={<MainDashboard />} />
           <Route path="/user-dashboard" element={<UserDashboard />} />
-          <Route path="/monthly-report" element={<TimeReportPage />} />
-          <Route path="/time-tracking" element={<TimeReportPage />} />
+          <Route path="/time-tracking" element={<TimeTrackingPage />} />
+          <Route path="/about" element={<AboutPage />} />
         </Route>
       </Route>
 

@@ -15,7 +15,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const API_BASE_URL = 'http://localhost:5000/api';
 
-function ClientTaskSelector({ onSelectClientTask }) {
+function ClientTaskSelector({ onSelectionChange, selectedClient, selectedTask }) {
   const { token } = useAuth();
   const [clients, setClients] = useState([]);
   const [selectedClientId, setSelectedClientId] = useState('');
@@ -90,18 +90,17 @@ function ClientTaskSelector({ onSelectClientTask }) {
   useEffect(() => {
     // Certifique-se de que `clients` e `tasks` já foram carregados
     // e que os IDs selecionados não são vazios antes de tentar encontrar os objetos
-    if (onSelectClientTask && selectedClientId && selectedTaskId && clients.length > 0 && tasks.length > 0) {
-      // Mude `c._id` para `c.id`
+    if (onSelectionChange && selectedClientId && selectedTaskId && clients.length > 0 && tasks.length > 0) {
+      // Encontrar objetos completos pelos IDs
       const selectedClient = clients.find(c => c.id === selectedClientId);
-      // Mude `t._id` para `t.id`
       const selectedTask = tasks.find(t => t.id === selectedTaskId);
 
-      // Verifique se os objetos foram encontrados antes de chamar onSelectClientTask
+      // Verifique se os objetos foram encontrados antes de chamar onSelectionChange
       if (selectedClient && selectedTask) {
-        onSelectClientTask(selectedClient, selectedTask);
+        onSelectionChange(selectedClient, selectedTask);
       }
     }
-  }, [selectedClientId, selectedTaskId, clients, tasks, onSelectClientTask]);
+  }, [selectedClientId, selectedTaskId, clients, tasks, onSelectionChange]);
 
 
   const handleClientChange = (event) => {
