@@ -187,20 +187,14 @@ async function resetDatabaseSecure(adminPassword, userPassword) {
     
     // 3. Reinserir dados iniciais
     const initialTasks = [
-      'Cadastro cotação', 'Fechamento', 'Envio de cotações aos cliente', 'Casos complexos'
+      'Desenvolvimento', 'Reuniões', 'Documentação', 'Suporte'
     ];
     for (const taskName of initialTasks) {
       await pool.query('INSERT INTO Tasks (name) VALUES ($1)', [taskName]);
     }
     
     const initialClients = [
-      'Amazon Polpas', 'Argo Foods', 'Ebram', 'TG Projects', 'PQVIRK', 'Inbra', 'Cedro',
-      'Gpagro', 'FCN Prime', 'Lusitano da Amazonia', 'Pneu Free', 'Empório dos Mármores',
-      'FG Resinas', 'Grupo vita sano', 'Tramontina Belém', 'Biomed', 'Mundo dos Ferros',
-      'OPT', 'UNESP', 'KRG', 'Brasil internacional', 'Duoflex', 'Purcom', 'Valgroup',
-      'Tramontina delta', 'Clean amazonas', 'Raposo Plásticos', 'Amaxxon', 'The controller',
-      'EnVimat', 'Formaggio', 'GR Water', 'Maringá Ferros', 'Alpha comex', 'Lusitano',
-      'Digital conect', 'Qualitronix', 'Adar Indústria', 'Tramontina garibaldi'
+      'Cliente 1', 'Cliente 2', 'Cliente 3', 'Cliente 4'
     ];
     for (const clientName of initialClients) {
       await pool.query('INSERT INTO Clients (name) VALUES ($1)', [clientName]);

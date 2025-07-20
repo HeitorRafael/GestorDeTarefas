@@ -47,7 +47,7 @@ async function initializeDatabase() {
 
     // Inserir tarefas iniciais básicas (genéricas)
     const initialTasks = [
-      'Desenvolvimento', 'Reuniões', 'Documentação', 'Testes'
+      'Desenvolvimento', 'Reuniões', 'Documentação', 'Suporte'
     ];
     for (const taskName of initialTasks) {
       await pool.query(
@@ -68,7 +68,7 @@ async function initializeDatabase() {
 
     // Inserir clientes iniciais básicos (exemplos genéricos)
     const initialClients = [
-      'Cliente Exemplo 1', 'Cliente Exemplo 2', 'Cliente Exemplo 3'
+      'Cliente 1', 'Cliente 2', 'Cliente 3', 'Cliente 4'
     ];
     for (const clientName of initialClients) {
       await pool.query(
@@ -140,7 +140,7 @@ async function resetDatabase() {
     // 3. Reinserir dados iniciais
     // Inserir tarefas iniciais
     const resetTasks = [
-      'Desenvolvimento', 'Reuniões', 'Documentação', 'Testes'
+      'Desenvolvimento', 'Reuniões', 'Documentação', 'Suporte'
     ];
     for (const taskName of resetTasks) {
       await pool.query('INSERT INTO Tasks (name) VALUES ($1)', [taskName]);
@@ -149,7 +149,7 @@ async function resetDatabase() {
 
     // Inserir clientes iniciais básicos
     const resetClients = [
-      'Cliente Exemplo 1', 'Cliente Exemplo 2', 'Cliente Exemplo 3'
+      'Cliente 1', 'Cliente 2', 'Cliente 3', 'Cliente 4'
     ];
     for (const clientName of resetClients) {
       await pool.query('INSERT INTO Clients (name) VALUES ($1)', [clientName]);
