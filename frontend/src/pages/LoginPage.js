@@ -78,9 +78,9 @@ function LoginPage() {
       >
         <Box sx={{ mb: 4 }}>
           {/* Adicione sua tag <img> aqui para o logo. Exemplo: */}
-          {/* <img src="/logo.png" alt="Maximundi Logo" style={{ maxWidth: '150px', height: 'auto' }} /> */}
+          {/* <img src="/logo.png" alt="Sistema Logo" style={{ maxWidth: '150px', height: 'auto' }} /> */}
           <Typography variant="h4" component="h1" sx={{ color: 'primary.main', fontWeight: 'bold' }}>
-            MAXIMUNDI
+            GESTÃO DE TEMPO
           </Typography>
           <Typography variant="h6" component="p" sx={{ color: 'text.secondary', mt: 1 }}>
             Gerenciamento de Tempo

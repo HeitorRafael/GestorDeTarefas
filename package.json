@@ -1,7 +1,7 @@
 {
-  "name": "maximundi",
+  "name": "time-management-system",
   "version": "1.0.0",
-  "description": "Sistema profissional para gestão de tempo corporativo",
+  "description": "Sistema de Gestão de Tempo - Versão Base Customizável",
   "main": "index.js",
   "scripts": {
     "install:all": "cd backend && npm install && cd ../frontend && npm install",
@@ -12,7 +12,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/seu-usuario/maximundi.git"
+    "url": "git+https://github.com/seu-usuario/time-management-system.git"
   },
   "keywords": [
     "time-management",
@@ -21,14 +21,15 @@
     "nodejs",
     "postgresql",
     "material-ui",
-    "enterprise"
+    "base-system",
+    "customizable"
   ],
-  "author": "MaxiMundi Team",
+  "author": "Desenvolvedor",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/seu-usuario/maximundi/issues"
+    "url": "https://github.com/seu-usuario/time-management-system/issues"
   },
-  "homepage": "https://github.com/seu-usuario/maximundi#readme",
+  "homepage": "https://github.com/seu-usuario/time-management-system#readme",
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"

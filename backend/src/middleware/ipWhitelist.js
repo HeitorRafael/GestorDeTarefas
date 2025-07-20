@@ -12,7 +12,7 @@ const allowedIPs = [
   // '26.1.2.101',     // IP específico do funcionário 2 no Radmin
   
   // TEMPORÁRIO: Para testes iniciais (REMOVER após configurar IPs reais)
-  // '0.0.0.0'         // ATENÇÃO: Permite qualquer IP - usar só para teste!
+  '0.0.0.0'         // ATENÇÃO: Permite qualquer IP - usar só para teste!
 ];
 
 // Função para verificar se IP está em uma sub-rede CIDR

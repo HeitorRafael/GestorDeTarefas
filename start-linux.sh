@@ -1,7 +1,7 @@
 #!/bin/bash
-# Script de inicialização do MaxiMundi para Linux/macOS
+# Script de inicialização do Sistema de Gestão de Tempo para Linux/macOS
 
-echo "🚀 Iniciando MaxiMundi com PM2..."
+echo "🚀 Iniciando Sistema de Gestão de Tempo com PM2..."
 
 # Criar diretório de logs se não existir
 mkdir -p logs
@@ -39,7 +39,7 @@ pm2 status
 pm2 startup
 pm2 save
 
-echo "✅ MaxiMundi iniciado com sucesso!"
+echo "✅ Sistema de Gestão de Tempo iniciado com sucesso!"
 echo "📊 Status: pm2 status"
 echo "📋 Logs: pm2 logs"
 echo "🔄 Restart: pm2 restart all"

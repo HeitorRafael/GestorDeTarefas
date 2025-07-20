@@ -1,9 +1,9 @@
 module.exports = {
   apps: [
     {
-      name: 'maximundi-backend',
+      name: 'time-system-backend',
       script: './src/app.js',
-      cwd: '/home/raffinoh/Área de trabalho/DESENVOLVIMENTO/MaxiMundi/backend',
+      cwd: '/home/raffinoh/Área de trabalho/DESENVOLVIMENTO/TimeManagementSystem/backend',
       instances: 1,
       autorestart: true,
       watch: false,
@@ -30,9 +30,9 @@ module.exports = {
       exp_backoff_restart_delay: 100
     },
     {
-      name: 'maximundi-frontend',
+      name: 'time-system-frontend',
       script: './serve-frontend.js',
-      cwd: '/home/raffinoh/Área de trabalho/DESENVOLVIMENTO/MaxiMundi',
+      cwd: '/home/raffinoh/Área de trabalho/DESENVOLVIMENTO/TimeManagementSystem',
       instances: 1,
       autorestart: true,
       watch: false,

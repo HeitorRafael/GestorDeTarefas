@@ -49,4 +49,14 @@ router.get('/notes-report', authMiddleware, timeEntryController.getNotesReport);
 // @access  Private (Usuário Comum)
 router.put('/:id/notes', authMiddleware, timeEntryController.updateTimeEntryNotes);
 
+// @route   PUT /api/time-entries/:id
+// @desc    Editar entrada de tempo completa (Admin ou dono da entrada)
+// @access  Private (Admin ou usuário dono)
+router.put('/:id', authMiddleware, timeEntryController.updateTimeEntry);
+
+// @route   DELETE /api/time-entries/:id
+// @desc    Excluir entrada de tempo (Admin ou dono da entrada)
+// @access  Private (Admin ou usuário dono)
+router.delete('/:id', authMiddleware, timeEntryController.deleteTimeEntry);
+
 module.exports = router;

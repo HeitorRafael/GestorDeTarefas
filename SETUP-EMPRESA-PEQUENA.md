@@ -1,4 +1,4 @@
-# 🏢 MaxiMundi para Empresa Pequena (GRATUITO)
+# 🏢 Sistema de Gestão de Tempo para Empresa Pequena (GRATUITO)
 
 ## 💰 **Solução 100% Gratuita para até 10 funcionários**
 
@@ -59,17 +59,17 @@ sudo apt install nodejs npm postgresql postgresql-contrib git -y
 ```bash
 # Criar banco e usuário
 sudo -u postgres psql
-CREATE DATABASE maximundi;
+CREATE DATABASE timemanagement;
 CREATE USER postgres WITH PASSWORD '0159357';
-GRANT ALL PRIVILEGES ON DATABASE maximundi TO postgres;
+GRANT ALL PRIVILEGES ON DATABASE timemanagement TO postgres;
 \q
 ```
 
-#### **3. Instalar o MaxiMundi**
+#### **3. Instalar o Sistema de Gestão de Tempo**
 ```bash
 # Clonar projeto
-git clone https://github.com/seu-usuario/maximundi.git
-cd maximundi
+git clone https://github.com/seu-usuario/time-management-system.git
+cd time-management-system
 
 # Instalar dependências
 npm run install:all
@@ -201,7 +201,7 @@ NODE_ENV=production
 ### **Backup Simples:**
 ```bash
 # Script de backup (rodar semanalmente)
-pg_dump maximundi > backup_$(date +%Y%m%d).sql
+pg_dump timemanagement > backup_$(date +%Y%m%d).sql
 
 # Copiar para pendrive ou Google Drive
 ```
@@ -259,9 +259,9 @@ ipconfig (Windows) ou ip addr (Linux)
 ```
 
 ### **Contato para Dúvidas:**
-- 📧 **suporte@maximundi.com**
+- 📧 **suporte@timemanagement.com**
 - 💬 **WhatsApp**: (11) 99999-9999
-- 🌐 **Documentação**: github.com/maximundi/docs
+- 🌐 **Documentação**: github.com/timemanagement/docs
 
 ---
 
@@ -270,7 +270,7 @@ ipconfig (Windows) ou ip addr (Linux)
 ### **Configuração Recomendada:**
 1. **1 computador** sempre ligado (servidor local)
 2. **PostgreSQL** instalado
-3. **MaxiMundi** rodando localmente
+3. **Sistema de Gestão de Tempo** rodando localmente
 4. **ngrok** para acesso externo ocasional
 5. **Backup manual** semanal
 

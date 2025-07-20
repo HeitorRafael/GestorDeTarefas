@@ -13,10 +13,12 @@ module.exports = (req, res, next) => {
 
   // Verificar o token
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const jwtSecret = process.env.JWT_SECRET || 'time_management_jwt_secret_key_2025_base_system';
+    const decoded = jwt.verify(token, jwtSecret);
     req.user = decoded.user; // Adiciona o payload do usuário à requisição
     next(); // Continua para a próxima função middleware/rota
   } catch (err) {
+    console.error('Erro de verificação JWT:', err.message);
     res.status(401).json({ msg: 'Token não é válido.' });
   }
 };

@@ -319,11 +319,11 @@ function AboutPage() {
             
             <Box sx={{ textAlign: 'center' }}>
               <Typography variant="h6" sx={{ fontWeight: 'bold', mb: 1 }}>
-                💡 MaxiMundi - Demonstração de Competências
+                💡 Sistema de Gestão de Tempo - Base Customizável
               </Typography>
               <Typography variant="body1" color="text.secondary">
-                O sistema MaxiMundi que você está utilizando é uma demonstração das minhas habilidades em desenvolvimento full-stack. 
-                Cada funcionalidade foi cuidadosamente projetada para oferecer a melhor experiência do usuário.
+                Este sistema foi desenvolvido como uma base sólida para gestão de tempo corporativo. 
+                Cada funcionalidade foi projetada para ser facilmente customizável conforme suas necessidades.
               </Typography>
             </Box>
           </Paper>

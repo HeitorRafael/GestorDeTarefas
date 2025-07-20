@@ -1,12 +1,12 @@
 // frontend/src/theme/theme.js
 import { createTheme } from '@mui/material/styles';
-import { amber, grey } from '@mui/material/colors'; // Importando algumas cores padrão para base
+import { amber, grey } from '@mui/material/colors'; // Importando cores padrão Material-UI
 
-// Cores base da Maximundi
-const maximundiColors = {
-  primaryDark: '#003366', // Azul Escuro/Petróleo
-  primaryLight: '#0099cc', // Azul Mais Claro/Ciano
-  // Podemos adicionar mais se necessário para nuances
+// Cores base do sistema (neutras e profissionais)
+const systemColors = {
+  primaryDark: '#1976d2', // Azul Material Design
+  primaryLight: '#42a5f5', // Azul Claro Material Design
+  // Cores neutras e profissionais para customização
 };
 
 // Tema Claro
@@ -14,12 +14,12 @@ export const lightTheme = createTheme({
   palette: {
     mode: 'light',
     primary: {
-      main: maximundiColors.primaryDark,
-      light: maximundiColors.primaryLight,
-      dark: '#002244', // Um tom mais escuro do primário
+      main: systemColors.primaryDark,
+      light: systemColors.primaryLight,
+      dark: '#1565c0', // Um tom mais escuro do primário
     },
     secondary: {
-      main: maximundiColors.primaryLight, // Usamos o azul claro como secundário
+      main: systemColors.primaryLight, // Usamos o azul claro como secundário
       light: amber[100], // Exemplo de cor secundária, pode ser ajustado
       dark: amber[700],
     },
@@ -63,9 +63,9 @@ export const darkTheme = createTheme({
   palette: {
     mode: 'dark',
     primary: {
-      main: maximundiColors.primaryLight, // No modo escuro, o azul mais claro pode ser o principal
-      light: '#33CCFF', // Um pouco mais claro que o primaryLight
-      dark: maximundiColors.primaryDark, // O azul escuro do Maximundi
+      main: systemColors.primaryLight, // No modo escuro, o azul mais claro pode ser o principal
+      light: '#64b5f6', // Um pouco mais claro que o primaryLight
+      dark: systemColors.primaryDark, // O azul escuro do sistema
     },
     secondary: {
       main: amber[500], // Cor de destaque no modo escuro

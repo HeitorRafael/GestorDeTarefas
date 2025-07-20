@@ -41,10 +41,13 @@ exports.login = async (req, res) => {
 
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      process.env.JWT_SECRET || 'time_management_jwt_secret_key_2025_base_system',
       { expiresIn: '1h' }, // Token expira em 1 hora
       (err, token) => {
-        if (err) throw err;
+        if (err) {
+          console.error('Erro ao gerar JWT:', err);
+          return res.status(500).json({ msg: 'Erro ao gerar token de autenticação.' });
+        }
         res.json({ token });
       }
     );

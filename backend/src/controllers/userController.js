@@ -76,3 +76,136 @@ exports.getAllUsers = async (req, res) => {
     res.status(500).send('Erro no servidor ao listar usuários.');
   }
 };
+
+// Alterar senha do próprio usuário
+exports.changePassword = async (req, res) => {
+  const pool = getPool();
+  const { currentPassword, newPassword } = req.body;
+  const userId = req.user.id; // Do middleware de auth
+
+  try {
+    // 1. Verificar senha atual
+    const { rows } = await pool.query('SELECT password FROM Users WHERE id = $1', [userId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: 'Usuário não encontrado.' });
+    }
+
+    const isMatch = await bcrypt.compare(currentPassword, rows[0].password);
+    if (!isMatch) {
+      return res.status(400).json({ msg: 'Senha atual incorreta.' });
+    }
+
+    // 2. Hash da nova senha
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // 3. Atualizar senha
+    await pool.query('UPDATE Users SET password = $1 WHERE id = $2', [hashedPassword, userId]);
+
+    res.json({ msg: 'Senha alterada com sucesso!' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao alterar senha.');
+  }
+};
+
+// Admin resetar senha de qualquer usuário
+exports.resetUserPassword = async (req, res) => {
+  const pool = getPool();
+  const { newPassword } = req.body;
+  const { id: targetUserId } = req.params;
+
+  try {
+    // Verificar se o usuário alvo existe
+    const { rows } = await pool.query('SELECT username FROM Users WHERE id = $1', [targetUserId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: 'Usuário não encontrado.' });
+    }
+
+    // Hash da nova senha
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+    // Atualizar senha
+    await pool.query('UPDATE Users SET password = $1 WHERE id = $2', [hashedPassword, targetUserId]);
+
+    res.json({ 
+      msg: `Senha do usuário "${rows[0].username}" resetada com sucesso pelo admin!` 
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao resetar senha.');
+  }
+};
+
+// Obter perfil do usuário logado
+exports.getUserProfile = async (req, res) => {
+  const pool = getPool();
+  const userId = req.user.id;
+
+  try {
+    const { rows } = await pool.query(
+      'SELECT id, username, role FROM Users WHERE id = $1', 
+      [userId]
+    );
+    
+    if (rows.length === 0) {
+      return res.status(404).json({ msg: 'Usuário não encontrado.' });
+    }
+
+    res.json(rows[0]);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao obter perfil.');
+  }
+};
+
+// Atualizar perfil do usuário logado (exceto senha)
+exports.updateUserProfile = async (req, res) => {
+  const pool = getPool();
+  const userId = req.user.id;
+  const { username } = req.body; // Por enquanto só username, pode expandir
+
+  try {
+    // Verificar se o novo username já existe (se foi alterado)
+    const { rows: currentUser } = await pool.query('SELECT username FROM Users WHERE id = $1', [userId]);
+    if (currentUser.length === 0) {
+      return res.status(404).json({ msg: 'Usuário não encontrado.' });
+    }
+
+    // Se o username mudou, verificar se não há conflito
+    if (username !== currentUser[0].username) {
+      const { rows: duplicateCheck } = await pool.query(
+        'SELECT id FROM Users WHERE username = $1 AND id != $2', 
+        [username, userId]
+      );
+      if (duplicateCheck.length > 0) {
+        return res.status(400).json({ msg: 'Este nome de usuário já está em uso.' });
+      }
+    }
+
+    // Atualizar o perfil
+    const { rowCount } = await pool.query(
+      'UPDATE Users SET username = $1 WHERE id = $2',
+      [username, userId]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ msg: 'Usuário não encontrado.' });
+    }
+
+    // Retornar dados atualizados
+    const { rows: updatedUser } = await pool.query(
+      'SELECT id, username, role FROM Users WHERE id = $1', 
+      [userId]
+    );
+
+    res.json({ 
+      msg: 'Perfil atualizado com sucesso!', 
+      user: updatedUser[0] 
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao atualizar perfil.');
+  }
+};

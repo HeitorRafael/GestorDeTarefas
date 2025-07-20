@@ -70,3 +70,48 @@ exports.deleteClient = async (req, res) => {
     res.status(500).send('Erro no servidor ao excluir cliente.');
   }
 };
+
+// Editar cliente (Admin Only)
+exports.updateClient = async (req, res) => {
+  const pool = getPool();
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    // Verificar se o cliente existe
+    const { rows: clientCheck } = await pool.query('SELECT name FROM Clients WHERE id = $1', [id]);
+    if (clientCheck.length === 0) {
+      return res.status(404).json({ msg: 'Cliente não encontrado.' });
+    }
+
+    // Verificar se já existe outro cliente com o mesmo nome
+    const { rows: duplicateCheck } = await pool.query(
+      'SELECT id FROM Clients WHERE name = $1 AND id != $2', 
+      [name, id]
+    );
+    if (duplicateCheck.length > 0) {
+      return res.status(400).json({ msg: 'Já existe um cliente com este nome.' });
+    }
+
+    // Atualizar o cliente
+    const { rowCount } = await pool.query(
+      'UPDATE Clients SET name = $1 WHERE id = $2',
+      [name, id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ msg: 'Cliente não encontrado.' });
+    }
+
+    // Buscar o cliente atualizado
+    const { rows: updatedClient } = await pool.query('SELECT * FROM Clients WHERE id = $1', [id]);
+
+    res.json({ 
+      msg: `Cliente "${clientCheck[0].name}" atualizado para "${name}" com sucesso!`, 
+      client: updatedClient[0] 
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao atualizar cliente.');
+  }
+};

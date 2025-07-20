@@ -33,23 +33,8 @@ async function initializeDatabase() {
       console.log('Senha do usuário admin padrão atualizada.');
     }
 
-    // Inserir ou atualizar um usuário comum padrão
-    const userSalt = await bcrypt.genSalt(10);
-    const userHashedPassword = await bcrypt.hash('senha123', userSalt); // Senha padrão: senha123
-    const { rows: userRows } = await pool.query("SELECT * FROM Users WHERE username = 'user1'");
-    if (userRows.length === 0) {
-      await pool.query(
-        "INSERT INTO Users (username, password, role) VALUES ($1, $2, 'common')",
-        ['user1', userHashedPassword]
-      );
-      console.log('Usuário comum padrão inserido.');
-    } else {
-      await pool.query(
-        "UPDATE Users SET password = $1 WHERE username = 'user1'",
-        [userHashedPassword]
-      );
-      console.log('Senha do usuário comum padrão atualizada.');
-    }
+    // Apenas manter usuário admin - remover usuário demo
+    console.log('Usuário admin configurado. Usuários demo devem ser criados conforme necessário.');
 
     // 2. Criar Tabela Tasks
     await pool.query(`
@@ -60,9 +45,9 @@ async function initializeDatabase() {
     `);
     console.log('Tabela Tasks verificada/criada.');
 
-    // Inserir tarefas iniciais (da Imagem 1)
+    // Inserir tarefas iniciais básicas (genéricas)
     const initialTasks = [
-      'Cadastro cotação', 'Fechamento', 'Envio de cotações aos cliente', 'Casos complexos'
+      'Desenvolvimento', 'Reuniões', 'Documentação', 'Testes'
     ];
     for (const taskName of initialTasks) {
       await pool.query(
@@ -81,15 +66,9 @@ async function initializeDatabase() {
     `);
     console.log('Tabela Clients verificada/criada.');
 
-    // Inserir clientes iniciais (da Imagem 2)
+    // Inserir clientes iniciais básicos (exemplos genéricos)
     const initialClients = [
-      'Amazon Polpas', 'Argo Foods', 'Ebram', 'TG Projects', 'PQVIRK', 'Inbra', 'Cedro',
-      'Gpagro', 'FCN Prime', 'Lusitano da Amazonia', 'Pneu Free', 'Empório dos Mármores',
-      'FG Resinas', 'Grupo vita sano', 'Tramontina Belém', 'Biomed', 'Mundo dos Ferros',
-      'OPT', 'UNESP', 'KRG', 'Brasil internacional', 'Duoflex', 'Purcom', 'Valgroup',
-      'Tramontina delta', 'Clean amazonas', 'Raposo Plásticos', 'Amaxxon', 'The controller',
-      'EnVimat', 'Formaggio', 'GR Water', 'Maringá Ferros', 'Alpha comex', 'Lusitano',
-      'Digital conect', 'Qualitronix', 'Adar Indústria', 'Tramontina garibaldi'
+      'Cliente Exemplo 1', 'Cliente Exemplo 2', 'Cliente Exemplo 3'
     ];
     for (const clientName of initialClients) {
       await pool.query(
@@ -143,8 +122,8 @@ async function resetDatabase() {
     await pool.query('DELETE FROM TimeEntries');
     console.log('Todos os registros de tempo removidos.');
     
-    await pool.query('DELETE FROM Users WHERE username NOT IN (\'admin\', \'user1\')');
-    console.log('Usuários adicionais removidos (admin e user1 mantidos).');
+    await pool.query('DELETE FROM Users WHERE username NOT IN (\'admin\')');
+    console.log('Usuários adicionais removidos (apenas admin mantido).');
     
     await pool.query('DELETE FROM Tasks');
     console.log('Todas as tarefas removidas.');
@@ -160,41 +139,31 @@ async function resetDatabase() {
     
     // 3. Reinserir dados iniciais
     // Inserir tarefas iniciais
-    const initialTasks = [
-      'Cadastro cotação', 'Fechamento', 'Envio de cotações aos cliente', 'Casos complexos'
+    const resetTasks = [
+      'Desenvolvimento', 'Reuniões', 'Documentação', 'Testes'
     ];
-    for (const taskName of initialTasks) {
+    for (const taskName of resetTasks) {
       await pool.query('INSERT INTO Tasks (name) VALUES ($1)', [taskName]);
     }
     console.log('Tarefas iniciais reinseridas.');
 
-    // Inserir clientes iniciais
-    const initialClients = [
-      'Amazon Polpas', 'Argo Foods', 'Ebram', 'TG Projects', 'PQVIRK', 'Inbra', 'Cedro',
-      'Gpagro', 'FCN Prime', 'Lusitano da Amazonia', 'Pneu Free', 'Empório dos Mármores',
-      'FG Resinas', 'Grupo vita sano', 'Tramontina Belém', 'Biomed', 'Mundo dos Ferros',
-      'OPT', 'UNESP', 'KRG', 'Brasil internacional', 'Duoflex', 'Purcom', 'Valgroup',
-      'Tramontina delta', 'Clean amazonas', 'Raposo Plásticos', 'Amaxxon', 'The controller',
-      'EnVimat', 'Formaggio', 'GR Water', 'Maringá Ferros', 'Alpha comex', 'Lusitano',
-      'Digital conect', 'Qualitronix', 'Adar Indústria', 'Tramontina garibaldi'
+    // Inserir clientes iniciais básicos
+    const resetClients = [
+      'Cliente Exemplo 1', 'Cliente Exemplo 2', 'Cliente Exemplo 3'
     ];
-    for (const clientName of initialClients) {
+    for (const clientName of resetClients) {
       await pool.query('INSERT INTO Clients (name) VALUES ($1)', [clientName]);
     }
     console.log('Clientes iniciais reinseridos.');
     
-    // 4. Atualizar senhas dos usuários padrão
+    // 4. Atualizar senha do usuário admin
     const salt = await bcrypt.genSalt(10);
     const adminHashedPassword = await bcrypt.hash('admin123', salt);
     await pool.query("UPDATE Users SET password = $1 WHERE username = 'admin'", [adminHashedPassword]);
-    
-    const userSalt = await bcrypt.genSalt(10);
-    const userHashedPassword = await bcrypt.hash('senha123', userSalt);
-    await pool.query("UPDATE Users SET password = $1 WHERE username = 'user1'", [userHashedPassword]);
-    console.log('Senhas dos usuários padrão atualizadas.');
+    console.log('Senha do usuário admin atualizada.');
     
     console.log('Reset do banco de dados concluído com sucesso!');
-    console.log('Estado atual: apenas usuários admin/user1, todas as tarefas e clientes iniciais, nenhum registro de tempo.');
+    console.log('Estado atual: apenas usuário admin, tarefas e clientes básicos, nenhum registro de tempo.');
     
   } catch (err) {
     console.error('Erro ao resetar o banco de dados:', err);

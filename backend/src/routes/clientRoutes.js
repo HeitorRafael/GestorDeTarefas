@@ -26,4 +26,9 @@ router.post('', authMiddleware, adminAuthMiddleware, clientController.addClient)
 // @access  Private (Admin)
 router.delete('/:id', authMiddleware, adminAuthMiddleware, clientController.deleteClient);
 
+// @route   PUT /api/admin/clients/:id
+// @desc    Editar cliente (Admin Only)
+// @access  Private (Admin)
+router.put('/:id', authMiddleware, adminAuthMiddleware, clientController.updateClient);
+
 module.exports = router;

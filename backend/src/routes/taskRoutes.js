@@ -31,4 +31,9 @@ router.post('', authMiddleware, adminAuthMiddleware, taskController.addTask);
 // @access  Private (Admin)
 router.delete('/:id', authMiddleware, adminAuthMiddleware, taskController.deleteTask);
 
+// @route   PUT /api/admin/tasks/:id
+// @desc    Editar tarefa (Admin Only)
+// @access  Private (Admin)
+router.put('/:id', authMiddleware, adminAuthMiddleware, taskController.updateTask);
+
 module.exports = router;

@@ -405,3 +405,100 @@ exports.updateTimeEntryNotes = async (req, res) => {
     res.status(500).send('Erro no servidor ao atualizar anotações.');
   }
 };
+
+// Editar entrada de tempo completa (Admin ou dono da entrada)
+exports.updateTimeEntry = async (req, res) => {
+  const pool = getPool();
+  const { id } = req.params;
+  const { taskId, clientId, startTime, endTime, notes } = req.body;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
+  try {
+    // Verificar se a entrada existe e se o usuário tem permissão
+    const { rows: entryCheck } = await pool.query('SELECT userId FROM TimeEntries WHERE id = $1', [id]);
+    if (entryCheck.length === 0) {
+      return res.status(404).json({ msg: 'Registro de tempo não encontrado.' });
+    }
+
+    // Verificar permissão (admin pode editar qualquer um, comum só o próprio)
+    if (userRole !== 'admin' && entryCheck[0].userid !== userId) {
+      return res.status(403).json({ msg: 'Você não tem permissão para editar este registro.' });
+    }
+
+    // Validar se as datas são válidas
+    const start = new Date(startTime);
+    const end = endTime ? new Date(endTime) : null;
+    
+    if (end && start >= end) {
+      return res.status(400).json({ msg: 'A data de fim deve ser posterior à data de início.' });
+    }
+
+    // Calcular duração se endTime for fornecido
+    let duration = null;
+    if (end) {
+      duration = Math.floor((end - start) / 1000); // duração em segundos
+    }
+
+    // Atualizar a entrada
+    const { rowCount, rows } = await pool.query(
+      `UPDATE TimeEntries
+       SET taskId = $1, clientId = $2, startTime = $3, endTime = $4, duration = $5, notes = $6
+       WHERE id = $7
+       RETURNING *`,
+      [taskId, clientId, startTime, endTime, duration, notes, id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ msg: 'Erro ao atualizar registro de tempo.' });
+    }
+
+    res.json({ msg: 'Registro de tempo atualizado com sucesso!', entry: rows[0] });
+  } catch (err) {
+    console.error('Erro ao atualizar entrada de tempo:', err.message);
+    res.status(500).send('Erro no servidor ao atualizar entrada de tempo.');
+  }
+};
+
+// Excluir entrada de tempo (Admin ou dono da entrada)
+exports.deleteTimeEntry = async (req, res) => {
+  const pool = getPool();
+  const { id } = req.params;
+  const userId = req.user.id;
+  const userRole = req.user.role;
+
+  try {
+    // Verificar se a entrada existe e obter dados para permissão
+    const { rows: entryCheck } = await pool.query(
+      `SELECT te.userId, t.name as taskName, c.name as clientName 
+       FROM TimeEntries te
+       JOIN Tasks t ON te.taskId = t.id
+       JOIN Clients c ON te.clientId = c.id
+       WHERE te.id = $1`, 
+      [id]
+    );
+    
+    if (entryCheck.length === 0) {
+      return res.status(404).json({ msg: 'Registro de tempo não encontrado.' });
+    }
+
+    // Verificar permissão (admin pode deletar qualquer um, comum só o próprio)
+    if (userRole !== 'admin' && entryCheck[0].userid !== userId) {
+      return res.status(403).json({ msg: 'Você não tem permissão para excluir este registro.' });
+    }
+
+    // Excluir a entrada
+    const { rowCount } = await pool.query('DELETE FROM TimeEntries WHERE id = $1', [id]);
+
+    if (rowCount === 0) {
+      return res.status(404).json({ msg: 'Erro ao excluir registro de tempo.' });
+    }
+
+    res.json({ 
+      msg: `Registro de tempo (${entryCheck[0].taskname} - ${entryCheck[0].clientname}) excluído com sucesso!`
+    });
+  } catch (err) {
+    console.error('Erro ao excluir entrada de tempo:', err.message);
+    res.status(500).send('Erro no servidor ao excluir entrada de tempo.');
+  }
+};

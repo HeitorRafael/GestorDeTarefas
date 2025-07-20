@@ -71,3 +71,48 @@ exports.deleteTask = async (req, res) => {
     res.status(500).send('Erro no servidor ao excluir tarefa.');
   }
 };
+
+// Editar tarefa (Admin Only)
+exports.updateTask = async (req, res) => {
+  const pool = getPool();
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+    // Verificar se a tarefa existe
+    const { rows: taskCheck } = await pool.query('SELECT name FROM Tasks WHERE id = $1', [id]);
+    if (taskCheck.length === 0) {
+      return res.status(404).json({ msg: 'Tarefa não encontrada.' });
+    }
+
+    // Verificar se já existe outra tarefa com o mesmo nome
+    const { rows: duplicateCheck } = await pool.query(
+      'SELECT id FROM Tasks WHERE name = $1 AND id != $2', 
+      [name, id]
+    );
+    if (duplicateCheck.length > 0) {
+      return res.status(400).json({ msg: 'Já existe uma tarefa com este nome.' });
+    }
+
+    // Atualizar a tarefa
+    const { rowCount } = await pool.query(
+      'UPDATE Tasks SET name = $1 WHERE id = $2',
+      [name, id]
+    );
+
+    if (rowCount === 0) {
+      return res.status(404).json({ msg: 'Tarefa não encontrada.' });
+    }
+
+    // Buscar a tarefa atualizada
+    const { rows: updatedTask } = await pool.query('SELECT * FROM Tasks WHERE id = $1', [id]);
+
+    res.json({ 
+      msg: `Tarefa "${taskCheck[0].name}" atualizada para "${name}" com sucesso!`, 
+      task: updatedTask[0] 
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Erro no servidor ao atualizar tarefa.');
+  }
+};

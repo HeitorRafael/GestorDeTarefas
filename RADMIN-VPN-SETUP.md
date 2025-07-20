@@ -1,7 +1,7 @@
-# Configuração Radmin VPN + MaxiMundi
+# Configuração Radmin VPN + Sistema de Gestão de Tempo
 
 ## 📋 Visão Geral
-Este documento explica como configurar o acesso remoto seguro ao MaxiMundi usando Radmin VPN, permitindo que funcionários trabalhem de casa com total segurança.
+Este documento explica como configurar o acesso remoto seguro ao Sistema de Gestão de Tempo usando Radmin VPN, permitindo que funcionários trabalhem de casa com total segurança.
 
 ## 🔧 Configuração do Radmin VPN
 
@@ -28,7 +28,7 @@ Este documento explica como configurar o acesso remoto seguro ao MaxiMundi usand
    ipconfig
    ```
 
-## 🛡️ Segurança Configurada no MaxiMundi
+## 🛡️ Segurança Configurada no Sistema
 
 ### IPs Permitidos (já configurado)
 - `192.168.1.0/24` - Rede local do escritório
@@ -38,7 +38,7 @@ Este documento explica como configurar o acesso remoto seguro ao MaxiMundi usand
 ### Como Funciona
 1. Funcionário conecta no Radmin VPN
 2. Recebe IP na faixa 26.x.x.x
-3. Acessa MaxiMundi normalmente pelo navegador
+3. Acessa Sistema normalmente pelo navegador
 4. Sistema verifica IP e permite acesso
 
 ## 🚀 Fluxo de Trabalho para Funcionários
@@ -55,7 +55,7 @@ Este documento explica como configurar o acesso remoto seguro ao MaxiMundi usand
    - Fazer login normal
 
 3. **Ao Finalizar**
-   - Fechar sistema MaxiMundi
+   - Fechar Sistema de Gestão de Tempo
    - Desconectar VPN (opcional)
 
 ## 📱 Instruções para Funcionários
@@ -64,7 +64,7 @@ Este documento explica como configurar o acesso remoto seguro ao MaxiMundi usand
 Enviar via WhatsApp para cada funcionário:
 
 ```
-🏢 ACESSO HOME OFFICE - MaxiMundi
+🏢 ACESSO HOME OFFICE - Sistema de Gestão de Tempo
 
 📥 1. Baixar Radmin VPN:
 https://www.radmin-vpn.com/
@@ -104,11 +104,11 @@ http://[IP_SERVIDOR]:3000
 
 ### Logs de Acesso
 ```bash
-# Ver logs do MaxiMundi
-pm2 logs maximundi-backend
+# Ver logs do Sistema
+pm2 logs time-system-backend
 
 # Filtrar acessos VPN
-pm2 logs maximundi-backend | grep "26\."
+pm2 logs time-system-backend | grep "26\."
 ```
 
 ### Verificar Conexões VPN Ativas
@@ -147,4 +147,4 @@ No servidor Radmin VPN, verificar usuários conectados na interface gráfica.
 - **Anual:** Revisar política de segurança
 
 ---
-**✅ Com essa configuração, o MaxiMundi estará 100% preparado para home office seguro!**
+**✅ Com essa configuração, o Sistema de Gestão de Tempo estará 100% preparado para home office seguro!**

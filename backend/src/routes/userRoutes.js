@@ -20,4 +20,24 @@ router.get('/', authMiddleware, adminAuthMiddleware, userController.getAllUsers)
 // @access  Private (Admin)
 router.delete('/:id', authMiddleware, adminAuthMiddleware, userController.deleteUser);
 
+// @route   PUT /api/users/change-password
+// @desc    Alterar senha do próprio usuário
+// @access  Private (qualquer usuário logado)
+router.put('/change-password', authMiddleware, userController.changePassword);
+
+// @route   PUT /api/admin/users/:id/reset-password
+// @desc    Admin resetar senha de qualquer usuário
+// @access  Private (Admin)
+router.put('/:id/reset-password', authMiddleware, adminAuthMiddleware, userController.resetUserPassword);
+
+// @route   GET /api/users/profile
+// @desc    Obter perfil do usuário logado
+// @access  Private (qualquer usuário logado)
+router.get('/profile', authMiddleware, userController.getUserProfile);
+
+// @route   PUT /api/users/profile
+// @desc    Atualizar perfil do usuário logado (exceto senha)
+// @access  Private (qualquer usuário logado)
+router.put('/profile', authMiddleware, userController.updateUserProfile);
+
 module.exports = router;
