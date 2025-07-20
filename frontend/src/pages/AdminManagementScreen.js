@@ -18,11 +18,21 @@ import {
   InputLabel,
   FormControl,
   useTheme,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Tooltip,
+  InputAdornment
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import PersonAddIcon from '@mui/icons-material/PersonAdd';
 import PeopleIcon from '@mui/icons-material/People';
+import VpnKeyIcon from '@mui/icons-material/VpnKey';
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import axios from 'axios';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -41,7 +51,11 @@ function AdminManagementScreen() {
   const [newPassword, setNewPassword] = useState('');
   const [newRole, setNewRole] = useState('common');
 
-  
+  // State for password management modal
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [newUserPassword, setNewUserPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
 
   
 
@@ -125,9 +139,48 @@ function AdminManagementScreen() {
     }
   };
 
-  
+  const handleOpenPasswordModal = (user) => {
+    setSelectedUser(user);
+    setNewUserPassword('');
+    setPasswordModalOpen(true);
+  };
 
-  
+  const handleClosePasswordModal = () => {
+    setPasswordModalOpen(false);
+    setSelectedUser(null);
+    setNewUserPassword('');
+    setShowPassword(false);
+  };
+
+  const handleChangeUserPassword = async () => {
+    if (!newUserPassword.trim()) {
+      setError('A nova senha não pode estar vazia.');
+      return;
+    }
+
+    try {
+      setError(null);
+      setSuccessMessage(null);
+      const config = {
+        headers: {
+          'x-auth-token': token,
+          'Content-Type': 'application/json',
+        },
+      };
+      
+      await axios.put(
+        `${API_BASE_URL}/admin/users/${selectedUser.id}/reset-password`,
+        { newPassword: newUserPassword },
+        config
+      );
+
+      setSuccessMessage(`Senha do usuário "${selectedUser.username}" alterada com sucesso!`);
+      handleClosePasswordModal();
+    } catch (err) {
+      console.error('Erro ao alterar senha:', err.response ? err.response.data.msg : err.message);
+      setError(`Erro ao alterar senha: ${err.response?.data?.msg || err.message}`);
+    }
+  };
 
   if (loading) {
     return (
@@ -384,6 +437,16 @@ function AdminManagementScreen() {
                   }}>
                     Função
                   </TableCell>
+                  <TableCell sx={{ 
+                    color: theme.palette.mode === 'dark' 
+                      ? theme.palette.common.white 
+                      : theme.palette.primary.contrastText, 
+                    fontWeight: 'bold', 
+                    fontSize: '1.1rem',
+                    py: 2
+                  }}>
+                    Alterar Senha
+                  </TableCell>
                   <TableCell align="right" sx={{ 
                     color: theme.palette.mode === 'dark' 
                       ? theme.palette.common.white 
@@ -452,6 +515,31 @@ function AdminManagementScreen() {
                         {userItem.role === 'admin' ? 'Admin' : 'Comum'}
                       </Box>
                     </TableCell>
+                    <TableCell sx={{ 
+                      fontSize: '1rem', 
+                      py: 2,
+                      color: 'text.primary',
+                      fontWeight: '500'
+                    }}>
+                      <Tooltip title="Alterar senha">
+                        <IconButton
+                          size="small"
+                          onClick={() => handleOpenPasswordModal(userItem)}
+                          color="primary"
+                          sx={{ 
+                            bgcolor: 'primary.light',
+                            color: 'white',
+                            '&:hover': {
+                              bgcolor: 'primary.main',
+                              transform: 'scale(1.1)'
+                            },
+                            transition: 'all 0.2s ease'
+                          }}
+                        >
+                          <VpnKeyIcon fontSize="small" />
+                        </IconButton>
+                      </Tooltip>
+                    </TableCell>
                     <TableCell align="right" sx={{ py: 2 }}>
                       <Button
                         variant="outlined"
@@ -480,6 +568,99 @@ function AdminManagementScreen() {
           </TableContainer>
         </Box>
       )}
+
+      {/* Modal para alterar senha do usuário */}
+      <Dialog
+        open={passwordModalOpen}
+        onClose={handleClosePasswordModal}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            p: 1
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          fontWeight: 'bold',
+          color: 'primary.main',
+          pb: 1
+        }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
+            <VpnKeyIcon />
+            Alterar Senha do Usuário
+          </Box>
+        </DialogTitle>
+        
+        <DialogContent sx={{ pt: 2 }}>
+          {selectedUser && (
+            <Box>
+              <Typography variant="h6" sx={{ mb: 2, textAlign: 'center' }}>
+                Usuário: <strong>{selectedUser.username}</strong>
+              </Typography>
+              
+              <TextField
+                autoFocus
+                margin="dense"
+                label="Nova Senha"
+                type={showPassword ? 'text' : 'password'}
+                fullWidth
+                variant="outlined"
+                value={newUserPassword}
+                onChange={(e) => setNewUserPassword(e.target.value)}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label="toggle password visibility"
+                        onClick={() => setShowPassword(!showPassword)}
+                        onMouseDown={(event) => event.preventDefault()}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
+                      </IconButton>
+                    </InputAdornment>
+                  )
+                }}
+                sx={{
+                  '& .MuiOutlinedInput-root': {
+                    borderRadius: 2,
+                  }
+                }}
+              />
+            </Box>
+          )}
+        </DialogContent>
+        
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button 
+            onClick={handleClosePasswordModal}
+            variant="outlined"
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: '500'
+            }}
+          >
+            Cancelar
+          </Button>
+          <Button 
+            onClick={handleChangeUserPassword}
+            variant="contained"
+            color="primary"
+            disabled={!newUserPassword.trim()}
+            sx={{ 
+              borderRadius: 2,
+              textTransform: 'none',
+              fontWeight: '500'
+            }}
+          >
+            Alterar Senha
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }

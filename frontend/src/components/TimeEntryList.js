@@ -14,7 +14,10 @@ import {
   Paper,
   Chip,
   useTheme,
+  IconButton,
+  Tooltip
 } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import axios from 'axios';
@@ -36,6 +39,7 @@ function TimeEntryList({ refreshTrigger }) {
   const [timeEntries, setTimeEntries] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
 
   const fetchTimeEntries = useCallback(async () => {
     if (!token || !user || !user.id) { // Certifica-se de que o ID do usuário está disponível
@@ -73,6 +77,29 @@ function TimeEntryList({ refreshTrigger }) {
     }
   }, [token, user]); // Dependência do 'user' para pegar o 'user.id'
 
+  const handleDeleteEntry = async (entryId, taskName, clientName) => {
+    if (!window.confirm(`Tem certeza que deseja excluir o registro "${taskName} - ${clientName}"? Esta ação não pode ser desfeita.`)) {
+      return;
+    }
+
+    try {
+      setError(null);
+      setSuccessMessage(null);
+      const config = {
+        headers: {
+          'x-auth-token': token,
+        },
+      };
+      
+      await axios.delete(`${API_BASE_URL}/time-entries/${entryId}`, config);
+      setSuccessMessage('Registro de tempo excluído com sucesso!');
+      fetchTimeEntries(); // Atualizar a lista
+    } catch (err) {
+      console.error('Erro ao excluir registro:', err.response ? err.response.data.msg : err.message);
+      setError(`Erro ao excluir registro: ${err.response?.data?.msg || err.message}`);
+    }
+  };
+
   useEffect(() => {
     fetchTimeEntries();
   }, [fetchTimeEntries, refreshTrigger]); // re-executa quando fetchTimeEntries muda ou refreshTrigger é ativado
@@ -107,6 +134,19 @@ function TimeEntryList({ refreshTrigger }) {
 
   return (
     <Box>
+      {successMessage && (
+        <Alert 
+          severity="success" 
+          sx={{ 
+            mb: 2, 
+            borderRadius: 2,
+            boxShadow: 1
+          }}
+        >
+          {successMessage}
+        </Alert>
+      )}
+      
       <TableContainer 
         component={Paper}
         sx={{
@@ -167,6 +207,13 @@ function TimeEntryList({ refreshTrigger }) {
               }}>
                 ⏱️ Duração
               </TableCell>
+              <TableCell align="center" sx={{ 
+                fontWeight: 'bold', 
+                fontSize: '1rem',
+                color: 'primary.main'
+              }}>
+                🔧 Ações
+              </TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -225,6 +272,25 @@ function TimeEntryList({ refreshTrigger }) {
                   color: 'secondary.main'
                 }}>
                   {formatDuration(entry.duration)}
+                </TableCell>
+                <TableCell align="center">
+                  {entry.endtime && ( // Só permite deletar registros finalizados
+                    <Tooltip title="Excluir registro">
+                      <IconButton
+                        onClick={() => handleDeleteEntry(entry.id, entry.taskname, entry.clientname)}
+                        color="error"
+                        size="small"
+                        sx={{
+                          '&:hover': {
+                            backgroundColor: 'error.light',
+                            color: 'white',
+                          }
+                        }}
+                      >
+                        <DeleteIcon fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
